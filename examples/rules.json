@@ -1,0 +1,4 @@
+[
+  {"id": "sohopdong", "label": "HD", "regex": "HD-\\d{4,}"},
+  {"id": "sotaikhoan", "label": "STK", "regex": "\\b\\d{12,14}\\b"}
+]
