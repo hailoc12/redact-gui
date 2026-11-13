@@ -37,7 +37,7 @@ impl Unredactor {
 
         // union tất cả placeholder thành 1 regex, dài trước để [SDT_1] không cắt [SDT_10]
         let mut tokens: Vec<&String> = map.keys().collect();
-        tokens.sort_by(|a, b| b.len().cmp(&a.len()));
+        tokens.sort_by_key(|t| std::cmp::Reverse(t.len()));
         let alternation: Vec<String> = tokens.iter().map(|t| regex::escape(t)).collect();
         let re = Regex::new(&alternation.join("|")).context("không dựng được matcher từ dict")?;
 

@@ -97,10 +97,9 @@ fn build_pattern_list(args: &Args) -> Result<Vec<Pattern>> {
             }
         }
         Some(args.patterns.iter().map(String::as_str).collect())
-    } else if let Some(level) = args.level {
-        Some(patterns::ids_for_level(level).to_vec())
     } else {
-        None
+        args.level
+            .map(|level| patterns::ids_for_level(level).to_vec())
     };
     let selected_set: Option<HashSet<&str>> = selected.map(|v| v.into_iter().collect());
 
