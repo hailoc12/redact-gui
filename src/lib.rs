@@ -7,3 +7,4 @@ pub mod brand;
 pub mod formats;
 pub mod patterns;
 pub mod redactor;
+pub mod unredact;

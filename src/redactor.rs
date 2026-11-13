@@ -8,7 +8,7 @@ use regex::Regex;
 use crate::patterns::{Normalize, Pattern};
 
 /// Một entry trong mapping (chỉ ghi ra file khi --map).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct MapEntry {
     pub pattern: String,
     pub original: String,

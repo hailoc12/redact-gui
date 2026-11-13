@@ -3,14 +3,23 @@
 ## Kiến trúc
 
 ```
-src/
-├── main.rs      CLI (clap), luồng xử lý file, in báo cáo
-├── lib.rs       export module cho test
-├── patterns.rs  pattern có sẵn + custom rule JSON
-├── redactor.rs  engine: combined regex, mapping, stats
+src/                    core library + CLI
+├── main.rs      CLI (clap): redact (mặc định) + subcommand unredact, --level 1-3
+├── lib.rs       export module cho test + cho GUI dùng lại
+├── patterns.rs  pattern có sẵn + custom rule JSON + ids_for_level()
+├── redactor.rs  engine: combined regex, mapping (MapEntry serialize), stats
+├── unredact.rs  engine khôi phục: dict JSON → regex union placeholder (dài trước)
 ├── formats.rs   dispatch text/CSV · JSON · PDF → output
 └── brand.rs     màu CLI theo design system Linh An v2.1
+gui/                    Tauri v2 app (redact-tool-gui)
+├── src/main.rs  commands: redact_file / unredact_file / load_example / list_examples
+├── ui/          vanilla HTML/CSS/JS — branding Lộc Đặng (Manrope/Inter, palette P2)
+└── tauri.conf.json — bundle resources: assets/examples (3 file ví dụ)
+assets/examples/       3 file ví dụ (txt · json · pdf) load thử ngay trong GUI
 ```
+
+GUI không chứa logic xử lý — mọi thao tác gọi sang lib `redact-tool` (một nguồn
+truth, test bằng cargo test như CLI).
 
 ## Quyết định chính
 

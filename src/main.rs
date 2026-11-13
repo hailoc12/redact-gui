@@ -11,15 +11,19 @@ use redact_tool::brand::Style;
 use redact_tool::formats;
 use redact_tool::patterns::{self, CustomRule, Pattern, BUILT_IN};
 use redact_tool::redactor::{RedactStats, Redactor};
+use redact_tool::unredact::Unredactor;
 
 #[derive(Parser)]
 #[command(
     name = "redact-tool",
     version,
     about = "Redact thông tin nhạy cảm (CCCD, CMND, MST, SĐT, email, tên DN) — 100% local, zero telemetry",
-    after_help = "Chế độ an toàn tuyệt đối: tool này KHÔNG có bất kỳ tính năng network nào.\nMọi xử lý diễn ra trên máy bạn. Xem README để biết chế độ AI-assist (optional, kém an toàn hơn)."
+    after_help = "Chế độ an toàn tuyệt đối: tool này KHÔNG có bất kỳ tính năng network nào.\nMọi xử lý diễn ra trên máy bạn.\n\nVí dụ:\n  redact-tool --level 2 baocao.pdf\n  redact-tool --dry-run baocao.pdf\n  redact-tool unredact baocao.redacted.txt --dict baocao.dict.json"
 )]
 struct Args {
+    /// Subcommand: redact (mặc định) hoặc unredact
+    #[command(subcommand)]
+    command: Option<Command>,
     /// File hoặc thư mục đầu vào (nhiều file cách nhau bằng khoảng trắng)
     input: Vec<PathBuf>,
 
@@ -36,8 +40,12 @@ struct Args {
     dry_run: bool,
 
     /// Chỉ chạy một số pattern (vd: cccd,sdt). Xem --list-patterns
-    #[arg(long, value_delimiter = ',')]
+    #[arg(long, value_delimiter = ',', conflicts_with = "level")]
     patterns: Vec<String>,
+
+    /// Mức redact nhanh: 1=Liên hệ (email,SĐT) · 2=Nhận diện (+CCCD,CMND,MST) · 3=Tối đa (+tên DN)
+    #[arg(long, value_parser = clap::value_parser!(u8).range(1..=3))]
+    level: Option<u8>,
 
     /// File rules JSON tùy chỉnh ([{"id","label","regex"}...])
     #[arg(long)]
@@ -60,24 +68,48 @@ struct Args {
     no_color: bool,
 }
 
+#[derive(clap::Subcommand)]
+enum Command {
+    /// Khôi phục dữ liệu gốc từ file đã redact + file dict
+    Unredact {
+        /// File đã redact (đã qua AI xử lý)
+        input: Vec<PathBuf>,
+
+        /// File dict sinh ra ở bước redact (--map / GUI)
+        #[arg(long)]
+        dict: PathBuf,
+
+        /// Thư mục đích (mặc định: ghi *.restored.* cạnh file gốc)
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+
+        /// Ghi đè lên file gốc
+        #[arg(long)]
+        in_place: bool,
+    },
+}
+
 fn build_pattern_list(args: &Args) -> Result<Vec<Pattern>> {
-    let selected: Option<HashSet<&str>> = if args.patterns.is_empty() {
-        None
-    } else {
+    let selected: Option<Vec<&str>> = if !args.patterns.is_empty() {
         for id in &args.patterns {
             if !BUILT_IN.iter().any(|p| p.id == id) {
                 bail!("pattern không tồn tại: {id} (xem --list-patterns)");
             }
         }
         Some(args.patterns.iter().map(String::as_str).collect())
+    } else if let Some(level) = args.level {
+        Some(patterns::ids_for_level(level).to_vec())
+    } else {
+        None
     };
+    let selected_set: Option<HashSet<&str>> = selected.map(|v| v.into_iter().collect());
 
     let mut list: Vec<Pattern> = Vec::new();
     for p in BUILT_IN {
         if !p.enabled {
             continue;
         }
-        if let Some(ids) = &selected {
+        if let Some(ids) = &selected_set {
             if !ids.contains(p.id) {
                 continue;
             }
@@ -192,10 +224,74 @@ fn main() {
         return;
     }
 
-    if let Err(err) = run(&args, &style) {
+    let result = match &args.command {
+        Some(Command::Unredact {
+            input,
+            dict,
+            output,
+            in_place,
+        }) => run_unredact(input, dict, output, *in_place, &style),
+        None => run(&args, &style),
+    };
+    if let Err(err) = result {
         eprintln!("{} {err:#}", style.warning("LỖI:"));
         std::process::exit(1);
     }
+}
+
+fn run_unredact(
+    inputs: &[PathBuf],
+    dict_path: &Path,
+    output_dir: &Option<PathBuf>,
+    in_place: bool,
+    style: &Style,
+) -> Result<()> {
+    if inputs.is_empty() {
+        bail!("thiếu file đầu vào cho unredact");
+    }
+    if in_place && output_dir.is_some() {
+        bail!("--in-place và --output không dùng cùng nhau");
+    }
+    let dict_raw = std::fs::read_to_string(dict_path)
+        .with_context(|| format!("đọc dict {}", dict_path.display()))?;
+    let unredactor = Unredactor::from_dict_json(&dict_raw)?;
+
+    println!(
+        "{} {} file · dict {} entry",
+        style.heading("unredact"),
+        inputs.len(),
+        unredactor.dict_size
+    );
+    println!("{}", style.rule(60));
+
+    for file in inputs {
+        let raw = std::fs::read_to_string(file)
+            .with_context(|| format!("đọc {}", file.display()))?;
+        let (restored, n) = unredactor.unredact(&raw);
+        let out = if in_place {
+            file.clone()
+        } else {
+            let stem = file.file_stem().and_then(|s| s.to_str()).unwrap_or("out");
+            // bỏ đuôi .redacted nếu có: baocao.redacted.txt → baocao.restored.txt
+            let stem = stem.strip_suffix(".redacted").unwrap_or(stem);
+            let name = match file.extension().and_then(|e| e.to_str()) {
+                Some(e) => format!("{stem}.restored.{e}"),
+                None => format!("{stem}.restored"),
+            };
+            let base = file.with_file_name(name);
+            match output_dir {
+                Some(dir) => {
+                    let _ = std::fs::create_dir_all(dir);
+                    dir.join(base.file_name().unwrap_or_default())
+                }
+                None => base,
+            }
+        };
+        std::fs::write(&out, restored).with_context(|| format!("ghi {}", out.display()))?;
+        println!("  {} {} {}", file.display(), style.muted("→"), style.muted(&out.display().to_string()));
+        println!("    {}", style.number(&format!("{n} placeholder khôi phục")));
+    }
+    Ok(())
 }
 
 fn run(args: &Args, style: &Style) -> Result<()> {

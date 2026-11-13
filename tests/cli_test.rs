@@ -167,3 +167,46 @@ fn recursive_directory() {
     assert!(dir.join("a.redacted.txt").exists());
     assert!(dir.join("sub/b.redacted.txt").exists());
 }
+
+#[test]
+fn unredact_round_trip_cli() {
+    let dir = tmp_dir("unredact");
+    let input = write(&dir.join("a.txt"), "SĐT: 0901234567 và email a@b.com");
+    let dict = dir.join("a.dict.json");
+
+    let out = bin()
+        .args(["--map", &s(&dict), &s(&input)])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+
+    let redacted_path = dir.join("a.redacted.txt");
+    let out = bin()
+        .args([
+            "unredact",
+            &s(&redacted_path),
+            "--dict",
+            &s(&dict),
+        ])
+        .output()
+        .unwrap();
+    assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+
+    let restored = std::fs::read_to_string(dir.join("a.restored.txt")).unwrap();
+    assert_eq!(restored.trim(), "SĐT: 0901234567 và email a@b.com");
+}
+
+#[test]
+fn level_selects_pattern_subset() {
+    let dir = tmp_dir("level");
+    let input = write(&dir.join("a.txt"), "0901234567 012345678901 a@b.com");
+    let out = bin()
+        .args(["--level", "1", &s(&input)])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let content = std::fs::read_to_string(dir.join("a.redacted.txt")).unwrap();
+    assert!(content.contains("[SDT_1]"));
+    assert!(content.contains("[EMAIL_1]"));
+    assert!(content.contains("012345678901"), "cấp 1 không redact CCCD");
+}

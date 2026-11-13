@@ -1,0 +1,300 @@
+/* ═══ redact-tool GUI — Branding Lộc Đặng / Linh An Solutions v2.3 ═══
+   Palette P2: Đỏ #C22620 (≤10%) · Đen Than #1F1F1F · Xám Muted #5F6368
+   · Xám Panel #F1F3F4 · Vàng Rule #D4A017 · Trắng #FFFFFF · Kẻ #DADCE0
+   Manrope = heading/wordmark · Inter = body · spacing 8px · radius 6/4 */
+
+:root {
+  --red: #C22620;
+  --red-dark: #9E1B16;
+  --ink: #1F1F1F;
+  --muted: #5F6368;
+  --panel: #F1F3F4;
+  --yellow: #D4A017;
+  --divider: #DADCE0;
+  --white: #FFFFFF;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+/* ─── Header ─── */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--divider);
+}
+
+.brand { display: flex; align-items: center; gap: var(--space-1); }
+
+.monogram {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--red);
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid var(--red);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wordmark {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.descriptor {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.header-meta { display: flex; align-items: center; gap: var(--space-1); }
+
+.badge-local {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+.badge-local svg { color: var(--yellow); }
+
+.version { color: var(--muted); font-size: 11px; }
+
+/* ─── Tabs ─── */
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3) 0;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px var(--space-2);
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+.tab:hover { color: var(--ink); }
+.tab.active { color: var(--red); border-bottom-color: var(--red); }
+
+/* ─── Panels ─── */
+main { flex: 1; padding: var(--space-2) var(--space-3); overflow-y: auto; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.step-label {
+  font-family: 'Manrope', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--red);
+  margin: var(--space-2) 0 var(--space-1);
+}
+.step-label:first-child { margin-top: 0; }
+
+/* ─── File rows / buttons ─── */
+.file-row { display: flex; align-items: center; gap: var(--space-1); margin-bottom: var(--space-1); }
+
+.file-name {
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.file-name.picked { color: var(--ink); user-select: text; }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  padding: 8px var(--space-2);
+  background: var(--white);
+  color: var(--ink);
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-secondary:hover { border-color: var(--muted); }
+.btn-secondary:active { background: var(--panel); }
+
+.btn-primary {
+  display: block;
+  width: 100%;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--white);
+  background: var(--red);
+  border: none;
+  border-radius: 6px;
+  padding: 11px var(--space-2);
+  margin-top: var(--space-2);
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.btn-primary:hover:not(:disabled) { background: var(--red-dark); }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ─── Examples ─── */
+.examples { display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; margin-bottom: var(--space-1); }
+.examples-label { font-size: 11px; color: var(--muted); }
+.chip {
+  font-size: 11.5px;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--divider); background: var(--white); }
+
+/* ─── Levels ─── */
+.levels { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-1); }
+
+.level { cursor: pointer; }
+.level input { display: none; }
+
+.level-body {
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  padding: var(--space-1) var(--space-2);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.level:hover .level-body { border-color: var(--muted); }
+.level input:checked + .level-body {
+  border-color: var(--red);
+  background: var(--panel);
+}
+
+.level-name { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 13px; }
+.level-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.level input:checked + .level-body .level-name { color: var(--red); }
+
+/* ─── Result ─── */
+.result {
+  background: var(--panel);
+  border-radius: 6px;
+  padding: var(--space-2);
+  margin-top: var(--space-2);
+  border-left: 3px solid var(--yellow);
+}
+
+.result-title { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 13px; margin-bottom: var(--space-1); }
+
+.stats { font-size: 12px; color: var(--ink); margin-bottom: var(--space-1); }
+.stats strong { font-family: 'Manrope', sans-serif; color: var(--red); }
+
+.outputs { display: flex; flex-direction: column; gap: 6px; }
+
+.output-row { display: flex; align-items: center; gap: var(--space-1); }
+
+.output-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  width: 96px;
+  flex-shrink: 0;
+}
+
+.output-row code {
+  font-size: 11.5px;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  padding: 4px 8px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: text;
+}
+
+.btn-reveal {
+  background: transparent;
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  color: var(--muted);
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.btn-reveal:hover { color: var(--ink); border-color: var(--muted); }
+
+.note-warn { font-size: 11px; color: var(--muted); margin-top: var(--space-1); }
+.note-warn::before { content: "⚠ "; color: var(--yellow); }
+
+/* ─── Error ─── */
+.error {
+  background: var(--panel);
+  border-left: 3px solid var(--red);
+  border-radius: 6px;
+  padding: var(--space-1) var(--space-2);
+  margin-top: var(--space-2);
+  font-size: 12.5px;
+  color: var(--red-dark);
+  user-select: text;
+}
+
+/* ─── Footer ─── */
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-3);
+  border-top: 1px solid var(--divider);
+  font-size: 9.5px;
+  color: var(--muted);
+}

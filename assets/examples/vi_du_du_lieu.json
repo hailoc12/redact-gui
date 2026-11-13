@@ -1,0 +1,24 @@
+{
+  "don_vi": "Công ty TNHH Linh An Solutions",
+  "mst": "0109876543",
+  "lien_he": {
+    "giam_doc": {
+      "ho_ten": "Nguyễn Văn An",
+      "cccd": "012345678901",
+      "sdt": "0901234567",
+      "email": "giamdoc@linhan.solutions"
+    },
+    "ke_toan": {
+      "ho_ten": "Trần Thị Bình",
+      "cmnd": "012345678",
+      "sdt": "+84987654321",
+      "email": "ketoan@linhan.solutions"
+    }
+  },
+  "khach_hang": [
+    {"ten": "Công ty Cổ phần Đầu tư Sao Mai", "mst": "0301234567", "sdt": "02838212345"},
+    {"ten": "Hợp tác xã Nông sản Việt", "mst": "0401234567-002", "sdt": "02031234567"}
+  ],
+  "gia_tri_hop_dong": 2500000000,
+  "ghi_chu": "Hồ sơ lưu hành nội bộ — không phổ biến ngoài phạm vi phòng kiểm toán."
+}

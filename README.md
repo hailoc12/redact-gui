@@ -24,15 +24,28 @@ diễn ra trên máy bạn — download, chạy offline, rút mạng vẫn chạ
 
 ## Cài đặt
 
-Tải binary tương ứng nền tảng từ [Releases](../../releases):
+Tải bản tương ứng nền tảng từ [Releases](../../releases):
 
-| Nền tảng | File |
-|---|---|
-| macOS (Apple Silicon) | `redact-tool-aarch64-apple-darwin.tar.gz` |
-| Windows (x64) | `redact-tool-x86_64-pc-windows-msvc.zip` |
+| Nền tảng | CLI | GUI (app có sẵn 3 file ví dụ) |
+|---|---|---|
+| macOS (Apple Silicon) | `redact-tool-aarch64-apple-darwin.tar.gz` | `.dmg` / `.app.tar.gz` |
+| Windows (x64) | `redact-tool-x86_64-pc-windows-msvc.zip` | `.msi` / `.exe` (NSIS) |
 
 macOS: giải nén, `chmod +x redact-tool`, đưa vào PATH. Lần đầu chạy có thể cần
 chuột phải → Open để bypass Gatekeeper (binary chưa ký).
+
+## GUI — hai chức năng: Redact & Unredact
+
+Mở app, có 2 tab:
+
+- **Redact**: chọn file (hoặc bấm 1 trong 3 file ví dụ có sẵn) → chọn mức
+  (1 · Liên hệ — email/SĐT · 2 · Nhận diện — + CCCD/CMND/MST · 3 · Tối đa — + tên DN)
+  → nhận **file đã redact + file dict**.
+- **Unredact**: sau khi AI xử lý xong file redacted, chọn file đó + file dict →
+  nhận lại file với dữ liệu gốc (`*.restored.*`).
+
+File dict chứa ánh xạ placeholder ↔ dữ liệu gốc — **giữ dict cẩn thận, đừng gửi
+đi cùng file redacted** (giữ dict = giữ chìa khóa).
 
 ## Sử dụng
 
@@ -51,6 +64,15 @@ redact-tool --in-place ghi-chu.md
 
 # Chỉ redact một số loại thông tin
 redact-tool --patterns cccd,sdt baocao.txt
+
+# Hoặc chọn nhanh theo mức: 1=Liên hệ · 2=Nhận diện · 3=Tối đa
+redact-tool --level 2 baocao.pdf
+
+# Redact kèm dict (file ánh xạ để khôi phục sau này)
+redact-tool --map baocao.dict.json baocao.txt
+
+# KHÔI PHỤC sau khi AI xử lý xong — cần file dict ở bước trên
+redact-tool unredact baocao.redacted.txt --dict baocao.dict.json
 
 # Thư mục đích riêng
 redact-tool -o ./da_redact/ hopdong.csv
@@ -133,8 +155,9 @@ redact trước khi đưa đi bất cứ đâu.
 ## Build từ source
 
 ```bash
-cargo build --release          # binary tại target/release/redact-tool
+cargo build --release          # CLI tại target/release/redact-tool
 cargo test                     # toàn bộ test
+cargo build --release -p redact-tool-gui   # GUI (cần tauri-cli để bundle: npx @tauri-apps/cli build)
 ```
 
 Cross-compile 2 nền tảng qua GitHub Actions: push tag `v*` → workflow

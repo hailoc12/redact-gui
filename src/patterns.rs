@@ -120,6 +120,27 @@ pub struct CustomRule {
     pub regex: String,
 }
 
+/// Mức redact cho GUI/CLI nhanh (chi tiết hơn thì dùng --patterns).
+///
+/// 1 — Liên hệ: chỉ kênh liên lạc (email, SĐT)
+/// 2 — Nhận diện: + giấy tờ/tài chính (CCCD, CMND, MST) — mặc định
+/// 3 — Tối đa: + cả tên doanh nghiệp/tổ chức
+pub fn ids_for_level(level: u8) -> &'static [&'static str] {
+    match level {
+        1 => &["sdt", "email"],
+        2 => &["cccd", "cmnd", "mst", "sdt", "email"],
+        _ => &["cccd", "cmnd", "mst", "sdt", "email", "tendn"],
+    }
+}
+
+pub fn level_name(level: u8) -> &'static str {
+    match level {
+        1 => "Liên hệ",
+        2 => "Nhận diện",
+        _ => "Tối đa",
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

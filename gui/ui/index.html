@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>redact — Lộc Đặng</title>
+  <link rel="stylesheet" href="fonts/fonts.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ═══ Header ═══ -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="monogram" aria-hidden="true">LĐ</div>
+      <div class="brand-text">
+        <div class="wordmark">Lộc Đặng</div>
+        <div class="descriptor">Founder · Linh An Solutions</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="badge-local">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+        100% local
+      </span>
+      <span class="version">v0.2.0</span>
+    </div>
+  </header>
+
+  <!-- ═══ Tabs ═══ -->
+  <nav class="tabs" role="tablist">
+    <button class="tab active" id="tab-redact" role="tab" aria-selected="true">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16c-.6-.6-.6-1.5 0-2.1L13.9 3a1.4 1.4 0 0 1 2 0l5.1 5.1a1.4 1.4 0 0 1 0 2L10 19"/></svg>
+      Redact
+    </button>
+    <button class="tab" id="tab-unredact" role="tab" aria-selected="false">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      Unredact
+    </button>
+  </nav>
+
+  <main>
+    <!-- ═══ Tab Redact ═══ -->
+    <section class="panel active" id="panel-redact">
+      <div class="step-label">01 · Chọn file</div>
+      <div class="file-row" id="redact-file-row">
+        <button class="btn-secondary" id="btn-pick-redact">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+          Chọn file…
+        </button>
+        <span class="file-name" id="redact-file-name">Chưa chọn file (txt · csv · json · pdf)</span>
+      </div>
+
+      <div class="examples" id="examples-row">
+        <span class="examples-label">Hoặc thử với ví dụ:</span>
+        <button class="chip" data-example="">…</button>
+      </div>
+
+      <div class="step-label">02 · Chọn mức redact</div>
+      <div class="levels" role="radiogroup">
+        <label class="level">
+          <input type="radio" name="level" value="1" />
+          <div class="level-body">
+            <div class="level-name">Liên hệ</div>
+            <div class="level-desc">Email, SĐT</div>
+          </div>
+        </label>
+        <label class="level">
+          <input type="radio" name="level" value="2" checked />
+          <div class="level-body">
+            <div class="level-name">Nhận diện</div>
+            <div class="level-desc">+ CCCD, CMND, MST</div>
+          </div>
+        </label>
+        <label class="level">
+          <input type="radio" name="level" value="3" />
+          <div class="level-body">
+            <div class="level-name">Tối đa</div>
+            <div class="level-desc">+ Tên doanh nghiệp</div>
+          </div>
+        </label>
+      </div>
+
+      <button class="btn-primary" id="btn-redact" disabled>
+        Redact file
+      </button>
+
+      <div class="result" id="redact-result" hidden>
+        <div class="result-title">Xong — kiểm tra lại trước khi đưa lên AI</div>
+        <div class="stats" id="redact-stats"></div>
+        <div class="outputs">
+          <div class="output-row">
+            <span class="output-label">File đã redact</span>
+            <code id="redact-out-path"></code>
+            <button class="btn-reveal" data-reveal="redact-out-path" title="Mở thư mục chứa file">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+            </button>
+          </div>
+          <div class="output-row">
+            <span class="output-label">File dict</span>
+            <code id="redact-dict-path"></code>
+            <button class="btn-reveal" data-reveal="redact-dict-path" title="Mở thư mục chứa file">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="note-warn">File dict chứa dữ liệu gốc — giữ an toàn, đừng gửi cùng file redacted.</div>
+      </div>
+    </section>
+
+    <!-- ═══ Tab Unredact ═══ -->
+    <section class="panel" id="panel-unredact">
+      <div class="step-label">01 · Chọn file đã qua AI</div>
+      <div class="file-row">
+        <button class="btn-secondary" id="btn-pick-unredact">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+          Chọn file đã xử lý…
+        </button>
+        <span class="file-name" id="unredact-file-name">Chưa chọn file</span>
+      </div>
+
+      <div class="step-label">02 · Chọn file dict</div>
+      <div class="file-row">
+        <button class="btn-secondary" id="btn-pick-dict">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+          Chọn file dict…
+        </button>
+        <span class="file-name" id="dict-file-name">Chưa chọn dict (file .dict.json ở bước redact)</span>
+      </div>
+
+      <button class="btn-primary" id="btn-unredact" disabled>
+        Khôi phục dữ liệu
+      </button>
+
+      <div class="result" id="unredact-result" hidden>
+        <div class="result-title">Đã khôi phục</div>
+        <div class="stats" id="unredact-stats"></div>
+        <div class="outputs">
+          <div class="output-row">
+            <span class="output-label">File gốc</span>
+            <code id="unredact-out-path"></code>
+            <button class="btn-reveal" data-reveal="unredact-out-path" title="Mở thư mục chứa file">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="error" id="error-box" hidden></div>
+  </main>
+
+  <footer class="app-footer">
+    <span>Linh An Solutions — redact-tool · Công nghệ cho người Việt</span>
+    <span>Xử lý hoàn toàn trên máy bạn · không gửi dữ liệu đi đâu</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

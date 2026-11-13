@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-cli:
     strategy:
       matrix:
         include:
@@ -43,3 +43,33 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ matrix.archive }}
+
+  build-gui:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            args: "--target aarch64-apple-darwin"
+          - os: windows-latest
+            args: ""
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin' || '' }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            .
+            gui
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: gui
+          tagName: ${{ github.ref_name }}
+          releaseName: "redact-tool ${{ github.ref_name }}"
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}

@@ -3,3 +3,4 @@
 /.cargo/config.toml
 Cargo.lock.bak
 *.redacted.*
+/gui/gen/
