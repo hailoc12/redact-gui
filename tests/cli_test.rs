@@ -182,15 +182,14 @@ fn unredact_round_trip_cli() {
 
     let redacted_path = dir.join("a.redacted.txt");
     let out = bin()
-        .args([
-            "unredact",
-            &s(&redacted_path),
-            "--dict",
-            &s(&dict),
-        ])
+        .args(["unredact", &s(&redacted_path), "--dict", &s(&dict)])
         .output()
         .unwrap();
-    assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+    assert!(
+        out.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
 
     let restored = std::fs::read_to_string(dir.join("a.restored.txt")).unwrap();
     assert_eq!(restored.trim(), "SĐT: 0901234567 và email a@b.com");
@@ -200,10 +199,7 @@ fn unredact_round_trip_cli() {
 fn level_selects_pattern_subset() {
     let dir = tmp_dir("level");
     let input = write(&dir.join("a.txt"), "0901234567 012345678901 a@b.com");
-    let out = bin()
-        .args(["--level", "1", &s(&input)])
-        .output()
-        .unwrap();
+    let out = bin().args(["--level", "1", &s(&input)]).output().unwrap();
     assert!(out.status.success());
     let content = std::fs::read_to_string(dir.join("a.redacted.txt")).unwrap();
     assert!(content.contains("[SDT_1]"));

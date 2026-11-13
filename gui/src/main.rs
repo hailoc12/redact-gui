@@ -74,8 +74,8 @@ fn redact_file(path: String, level: u8) -> Result<RedactResult, String> {
 #[tauri::command]
 fn unredact_file(path: String, dict_path: String) -> Result<UnredactResult, String> {
     let file = PathBuf::from(&path);
-    let dict_raw = std::fs::read_to_string(&dict_path)
-        .map_err(|e| err(format!("đọc dict: {e}")))?;
+    let dict_raw =
+        std::fs::read_to_string(&dict_path).map_err(|e| err(format!("đọc dict: {e}")))?;
     let unredactor = Unredactor::from_dict_json(&dict_raw).map_err(err)?;
 
     let raw = std::fs::read_to_string(&file).map_err(|e| err(format!("đọc file: {e}")))?;

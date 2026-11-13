@@ -22,10 +22,7 @@ impl Unredactor {
     pub fn from_dict_json(json: &str) -> Result<Self> {
         let entries: Vec<MapEntry> =
             serde_json::from_str(json).context("dict JSON không hợp lệ")?;
-        anyhow::ensure!(
-            !entries.is_empty(),
-            "dict rỗng — không có gì để khôi phục"
-        );
+        anyhow::ensure!(!entries.is_empty(), "dict rỗng — không có gì để khôi phục");
 
         let mut map = HashMap::new();
         for e in &entries {
@@ -42,8 +39,7 @@ impl Unredactor {
         let mut tokens: Vec<&String> = map.keys().collect();
         tokens.sort_by(|a, b| b.len().cmp(&a.len()));
         let alternation: Vec<String> = tokens.iter().map(|t| regex::escape(t)).collect();
-        let re = Regex::new(&alternation.join("|"))
-            .context("không dựng được matcher từ dict")?;
+        let re = Regex::new(&alternation.join("|")).context("không dựng được matcher từ dict")?;
 
         Ok(Self {
             map,

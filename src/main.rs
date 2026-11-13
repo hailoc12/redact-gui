@@ -265,8 +265,8 @@ fn run_unredact(
     println!("{}", style.rule(60));
 
     for file in inputs {
-        let raw = std::fs::read_to_string(file)
-            .with_context(|| format!("đọc {}", file.display()))?;
+        let raw =
+            std::fs::read_to_string(file).with_context(|| format!("đọc {}", file.display()))?;
         let (restored, n) = unredactor.unredact(&raw);
         let out = if in_place {
             file.clone()
@@ -288,8 +288,16 @@ fn run_unredact(
             }
         };
         std::fs::write(&out, restored).with_context(|| format!("ghi {}", out.display()))?;
-        println!("  {} {} {}", file.display(), style.muted("→"), style.muted(&out.display().to_string()));
-        println!("    {}", style.number(&format!("{n} placeholder khôi phục")));
+        println!(
+            "  {} {} {}",
+            file.display(),
+            style.muted("→"),
+            style.muted(&out.display().to_string())
+        );
+        println!(
+            "    {}",
+            style.number(&format!("{n} placeholder khôi phục"))
+        );
     }
     Ok(())
 }
