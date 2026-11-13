@@ -24,4 +24,4 @@ jobs:
       - name: Clippy
         run: cargo clippy -p redact-tool --all-targets -- -D warnings
       - name: Test
-        run: cargo test -p redact-tool --all
+        run: cargo test -p redact-tool
