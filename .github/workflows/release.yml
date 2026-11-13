@@ -28,7 +28,7 @@ jobs:
         with:
           key: ${{ matrix.target }}
       - name: Build release
-        run: cargo build --release --locked --target ${{ matrix.target }}
+        run: cargo build --release --locked -p redact-tool --target ${{ matrix.target }}
       - name: Package (macOS)
         if: matrix.os == 'macos-latest'
         run: |
