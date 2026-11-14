@@ -35,12 +35,12 @@ jobs:
         run: |
           Add-Content test.redacted.txt "Tom tat AI: ho so [CCCD_1] can bo sung"
           .\cli\redact-tool.exe unredact test.redacted.txt --dict dict.json
-          Get-Content test.redacted.restored.txt
+          Get-Content test.restored.txt
       - name: Verify round-trip
         shell: pwsh
         run: |
           $orig = Get-Content test.txt -Raw
-          $restored = (Get-Content test.redacted.restored.txt -Raw) -replace "Tom tat AI.*`n", ""
+          $restored = (Get-Content test.restored.txt -Raw) -replace "Tom tat AI.*`n", ""
           if ($orig.Trim() -eq $restored.Trim()) { Write-Host "ROUNDTRIP_OK" }
           else { Write-Host "ROUNDTRIP_MISMATCH"; exit 1 }
           if ((Get-Content test.redacted.txt -Raw) -notmatch "012345678901") { Write-Host "NO_LEAK_OK" }
