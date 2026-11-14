@@ -33,8 +33,14 @@ Tải bản tương ứng nền tảng từ [Releases](../../releases):
 
 | Ubuntu/Linux (x64) | `redact-cli-x86_64-unknown-linux-gnu.tar.gz` | `.deb` / `.AppImage` / `.rpm` |
 
-macOS: giải nén, `chmod +x redact-cli`, đưa vào PATH. Lần đầu chạy có thể cần
-chuột phải → Open để bypass Gatekeeper (binary chưa ký).
+macOS: giải nén, `chmod +x redact-cli`, đưa vào PATH.
+
+**Lần đầu mở app macOS**: nhấn đúp sẽ hiện cảnh báo vì app ad-hoc sign (không có
+chữ ký Apple Developer). **Chuột phải vào app → Open → Open** — chỉ cần làm 1 lần,
+các lần sau mở bình thường. Windows tương tự: SmartScreen → "More info" → "Run anyway".
+
+Ubuntu: `sudo apt install ./Redact.GUI_0.2.1_amd64.deb` (hoặc chạy `.AppImage`:
+`chmod +x && ./Redact.GUI_*.AppImage`).
 
 ## GUI — hai chức năng: Redact & Unredact
 
