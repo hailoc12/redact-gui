@@ -14,10 +14,7 @@ Tác giả: **Lộc Đặng** — Founder, **LINH AN SOLUTIONS** — *Công ngh�
 
 ## Vì sao cần tool này?
 
-Quy định cấm cán bộ, công chức đưa dữ liệu mật lên các hệ thống AI. Nhưng công việc
-thực tế vẫn cần AI hỗ trợ soạn thảo, tóm tắt, phân tích. **Redact GUI** giải bài toán
-ngược: giữ nguyên giá trị sử dụng của tài liệu, xóa đi phần dữ liệu cá nhân trước khi
-tài liệu rời khỏi máy bạn.
+Che, xóa, làm sạch dữ liệu nhạy cảm trước khi đưa lên AI là một nhiệm vụ tốn thời gian nếu làm thủ công. Do đó **Redact GUI** ra đời để tự động hoá việc đó: giữ nguyên giá trị sử dụng của tài liệu, chỉ thay phần dữ liệu cá nhân nhạy cảm bằng mã nhận diện, trước khi tài liệu rời khỏi máy bạn.
 
 **Nguyên tắc thiết kế: tool này không có bất kỳ dòng code network nào.** Toàn bộ xử lý
 diễn ra trên máy bạn — download, chạy offline, rút mạng vẫn chạy đủ chức năng.
@@ -177,9 +174,19 @@ redact trước khi đưa đi bất cứ đâu.
 
 ## ⚠️ Phạm vi và trách nhiệm
 
-- Tool chỉ **tự động hoá việc che một số thông tin thường được coi là nhạy cảm** — không bảo đảm tuyệt đối văn bản sau redact không còn sót dữ liệu nhạy cảm / dữ liệu mật.
-- Việc đưa văn bản đã redact lên các công cụ AI hay không là **trách nhiệm hoàn toàn của người sử dụng**.
-- **TUYỆT ĐỐI KHÔNG** dùng tool lên văn bản đã đóng dấu mật, hoặc được coi là mật theo các quy định khác. Quy định về bảo vệ văn bản mật luôn được tuân thủ trước hết.
+Luật hiện hành định nghĩa "dữ liệu" và các loại "bí mật". Các loại thông tin có tính chất mật/bí mật hiện gồm:
+
+- Thông tin, tài liệu, số liệu **bí mật nhà nước** (Tuyệt mật, Tối mật, Mật — Luật Bảo vệ bí mật nhà nước)
+- **Dữ liệu cốt lõi, dữ liệu quan trọng, dữ liệu dùng riêng** (Luật Dữ liệu)
+- **Dữ liệu cá nhân nhạy cảm** (Luật Bảo vệ dữ liệu cá nhân)
+- **Bí mật kinh doanh, bí mật công nghệ** (Luật Sở hữu trí tuệ, Bộ luật Lao động)
+- **Bí mật công tác, bí mật nghề nghiệp, bí mật đời tư** (Bộ luật Hình sự, Bộ luật Dân sự và luật chuyên ngành)
+
+Trong khung đó:
+
+- Tool chỉ **tự động hoá việc che một số thông tin thường được coi là nhạy cảm** — không bảo đảm tuyệt đối văn bản sau redact không còn sót dữ liệu thuộc các loại trên.
+- Văn bản đã redact có được dùng với công cụ AI hay không **tuỳ loại dữ liệu và quy định áp dụng** (ví dụ: bí mật kinh doanh/công nghệ phụ thuộc chính sách nội bộ của doanh nghiệp). Trách nhiệm cuối cùng thuộc về người sử dụng.
+- **TUYỆT ĐỐI KHÔNG** dùng tool lên văn bản thuộc diện bí mật nhà nước: tài liệu đóng dấu mật vốn **không được số hoá, sao chép**, chưa nói đến đưa vào bất kỳ công cụ nào.
 
 ## Bảo mật & quyền riêng tư
 
@@ -193,7 +200,7 @@ redact trước khi đưa đi bất cứ đâu.
 
 Công cụ này chỉ **tự động hoá việc che một số thông tin thường được coi là nhạy cảm**
 khỏi văn bản. Nó **không bảo đảm tuyệt đối** văn bản sau redact không còn sót dữ liệu
-nhạy cảm hoặc dữ liệu mật. Việc đưa văn bản đã redact lên công cụ AI hay không là
+nhạy cảm. Việc đưa văn bản đã redact lên công cụ AI hay không là
 **trách nhiệm hoàn toàn của người sử dụng**.
 
 **Tuyệt đối không sử dụng công cụ này cho văn bản được đóng dấu MẬT hoặc được coi
