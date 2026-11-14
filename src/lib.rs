@@ -5,6 +5,7 @@
 
 pub mod brand;
 pub mod formats;
+pub mod office;
 pub mod patterns;
 pub mod redactor;
 pub mod unredact;

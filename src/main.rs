@@ -18,7 +18,7 @@ use redact_cli::unredact::Unredactor;
     name = "redact-cli",
     version,
     about = "Redact thông tin nhạy cảm (CCCD, CMND, MST, SĐT, email, tên DN) — 100% local, zero telemetry",
-    after_help = "Chế độ an toàn tuyệt đối: tool này KHÔNG có bất kỳ tính năng network nào.\nMọi xử lý diễn ra trên máy bạn.\n\nVí dụ:\n  redact-cli --level 2 baocao.pdf\n  redact-cli --dry-run baocao.pdf\n  redact-cli unredact baocao.redacted.txt --dict baocao.dict.json"
+    after_help = "Công cụ chỉ tự động hoá che một số thông tin nhạy cảm thường gặp — KHÔNG bảo đảm\ntuyệt đối không sót. Đưa văn bản đã redact lên AI hay không là trách nhiệm người dùng.\nTUYỆT ĐỐI KHÔNG dùng cho văn bản đóng dấu MẬT.\n\nChế độ an toàn: tool không có bất kỳ tính năng network nào. Mọi xử lý trên máy bạn.\n\nVí dụ:\n  redact-cli --level 2 baocao.pdf\n  redact-cli --dry-run baocao.pdf\n  redact-cli unredact baocao.redacted.txt --dict baocao.dict.json"
 )]
 struct Args {
     /// Subcommand: redact (mặc định) hoặc unredact
@@ -139,29 +139,36 @@ fn build_pattern_list(args: &Args) -> Result<Vec<Pattern>> {
     Ok(list)
 }
 
-fn collect_files(args: &Args) -> Result<Vec<PathBuf>> {
+fn collect_files(args: &Args) -> Result<(Option<PathBuf>, Vec<PathBuf>)> {
+    let mut root: Option<PathBuf> = None;
     let mut files = Vec::new();
     for input in &args.input {
         if input.is_dir() {
-            if args.recursive {
-                for entry in walkdir::WalkDir::new(input)
-                    .into_iter()
-                    .filter_map(|e| e.ok())
-                {
-                    if entry.file_type().is_file() {
-                        files.push(entry.into_path());
+            if root.is_none() {
+                root = Some(input.clone());
+            }
+            let mut found = 0usize;
+            let mut walker = walkdir::WalkDir::new(input)
+                .into_iter()
+                .filter_map(|e| e.ok());
+            for entry in walker.by_ref() {
+                if !args.recursive && entry.depth() > 1 {
+                    continue; // không đệ quy: bỏ qua subfolder
+                }
+                if entry.file_type().is_file() {
+                    let p = entry.into_path();
+                    if formats::is_supported(&p) {
+                        files.push(p);
+                        found += 1;
                     }
                 }
-            } else {
-                for entry in std::fs::read_dir(input)
-                    .with_context(|| format!("đọc thư mục {}", input.display()))?
-                {
-                    let entry = entry?;
-                    let path = entry.path();
-                    if path.is_file() {
-                        files.push(path);
-                    }
-                }
+            }
+            if found == 0 {
+                eprintln!(
+                    "{}  {} (không có file hỗ trợ: txt/csv/json/xml/pdf/docx/xlsx/pptx)",
+                    style_placeholder_no_file(),
+                    input.display()
+                );
             }
         } else if input.is_file() {
             files.push(input.clone());
@@ -171,10 +178,15 @@ fn collect_files(args: &Args) -> Result<Vec<PathBuf>> {
     }
     files.sort();
     files.dedup();
-    Ok(files)
+    Ok((root, files))
 }
 
-fn resolve_out_path(args: &Args, file: &Path) -> PathBuf {
+/// marker cho thông báo (tránh clone Style vào collect_files)
+fn style_placeholder_no_file() -> &'static str {
+    "CHÚ Ý:"
+}
+
+fn resolve_out_path(args: &Args, file: &Path, root: Option<&Path>) -> PathBuf {
     if args.in_place {
         return file.to_path_buf();
     }
@@ -184,7 +196,28 @@ fn resolve_out_path(args: &Args, file: &Path) -> PathBuf {
             let _ = std::fs::create_dir_all(dir);
             dir.join(base.file_name().unwrap_or_default())
         }
-        None => base,
+        None => {
+            // xử lý folder: mirror cấu trúc vào <root>_redacted/ cạnh folder gốc
+            if let Some(r) = root {
+                let rel = file.strip_prefix(r).unwrap_or(file.as_os_str().as_ref());
+                let folder_name = r.file_name().and_then(|n| n.to_str()).unwrap_or("folder");
+                let out_root = r.with_file_name(format!("{folder_name}_redacted"));
+                // giữ cấu trúc subfolder + dùng TÊN FILE đã .redacted (base)
+                let file_name = base.file_name().unwrap_or_default();
+                let dst = match rel.parent() {
+                    Some(parent) if !parent.as_os_str().is_empty() => {
+                        out_root.join(parent).join(file_name)
+                    }
+                    _ => out_root.join(file_name),
+                };
+                if let Some(parent) = dst.parent() {
+                    let _ = std::fs::create_dir_all(parent);
+                }
+                dst
+            } else {
+                base
+            }
+        }
     }
 }
 
@@ -264,41 +297,55 @@ fn run_unredact(
     println!("{}", style.rule(60));
 
     for file in inputs {
-        let raw =
-            std::fs::read_to_string(file).with_context(|| format!("đọc {}", file.display()))?;
-        let (restored, n) = unredactor.unredact(&raw);
-        let out = if in_place {
-            file.clone()
-        } else {
-            let stem = file.file_stem().and_then(|s| s.to_str()).unwrap_or("out");
-            // bỏ đuôi .redacted nếu có: baocao.redacted.txt → baocao.restored.txt
-            let stem = stem.strip_suffix(".redacted").unwrap_or(stem);
-            let name = match file.extension().and_then(|e| e.to_str()) {
-                Some(e) => format!("{stem}.restored.{e}"),
-                None => format!("{stem}.restored"),
-            };
-            let base = file.with_file_name(name);
-            match output_dir {
-                Some(dir) => {
-                    let _ = std::fs::create_dir_all(dir);
-                    dir.join(base.file_name().unwrap_or_default())
-                }
-                None => base,
+        let result = formats::unredact_file_to(file, &unredactor);
+        match result {
+            Ok((formats::Processed::Text(restored), n)) => {
+                let out = restored_out_path(file, output_dir, in_place);
+                std::fs::write(&out, restored).with_context(|| format!("ghi {}", out.display()))?;
+                println!(
+                    "  {} {} {}",
+                    file.display(),
+                    style.muted("→"),
+                    style.muted(&out.display().to_string())
+                );
+                println!(
+                    "    {}",
+                    style.number(&format!("{n} placeholder khôi phục"))
+                );
             }
-        };
-        std::fs::write(&out, restored).with_context(|| format!("ghi {}", out.display()))?;
-        println!(
-            "  {} {} {}",
-            file.display(),
-            style.muted("→"),
-            style.muted(&out.display().to_string())
-        );
-        println!(
-            "    {}",
-            style.number(&format!("{n} placeholder khôi phục"))
-        );
+            Ok((formats::Processed::Written(out), n)) => {
+                println!(
+                    "  {} {} {}",
+                    file.display(),
+                    style.muted("→"),
+                    style.muted(&out.display().to_string())
+                );
+                println!(
+                    "    {}",
+                    style.number(&format!("{n} placeholder khôi phục"))
+                );
+            }
+            Err(err) => {
+                eprintln!("  {} {}", style.warning("BỎ QUA:"), file.display());
+                eprintln!("    {err:#}");
+            }
+        }
     }
     Ok(())
+}
+
+fn restored_out_path(file: &Path, output_dir: &Option<PathBuf>, in_place: bool) -> PathBuf {
+    if in_place {
+        return file.to_path_buf();
+    }
+    let base = formats::unredact_output_path(file);
+    match output_dir {
+        Some(dir) => {
+            let _ = std::fs::create_dir_all(dir);
+            dir.join(base.file_name().unwrap_or_default())
+        }
+        None => base,
+    }
 }
 
 fn run(args: &Args, style: &Style) -> Result<()> {
@@ -310,7 +357,7 @@ fn run(args: &Args, style: &Style) -> Result<()> {
     }
 
     let pattern_list = build_pattern_list(args)?;
-    let files = collect_files(args)?;
+    let (root, files) = collect_files(args)?;
     anyhow::ensure!(!files.is_empty(), "không tìm thấy file nào để xử lý");
 
     let mut redactor = Redactor::new(pattern_list)?;
@@ -334,14 +381,30 @@ fn run(args: &Args, style: &Style) -> Result<()> {
         let result = if args.dry_run {
             formats::dry_run_file(file, &mut redactor).map(|_| None)
         } else {
-            formats::redact_file(file, &mut redactor).map(Some)
+            formats::redact_file_to(file, &mut redactor).map(Some)
         };
         let file_stats = redactor.stats_since(&before);
         total += file_stats.total;
         match result {
-            Ok(Some(content)) => {
-                let out = resolve_out_path(args, file);
+            Ok(Some(formats::Processed::Text(content))) => {
+                let out = resolve_out_path(args, file, root.as_deref());
                 std::fs::write(&out, content).with_context(|| format!("ghi {}", out.display()))?;
+                written += 1;
+                println!(
+                    "  {} {} {}",
+                    file.display(),
+                    style.muted("→"),
+                    style.muted(&out.display().to_string())
+                );
+                println!("    {}", style.number(&fmt_stats(&file_stats)));
+            }
+            Ok(Some(formats::Processed::Written(tmp))) => {
+                // zip formats ghi cạnh file gốc — chuyển tới đúng vị trí output
+                let out = resolve_out_path(args, file, root.as_deref());
+                if tmp != out && std::fs::rename(&tmp, &out).is_err() {
+                    std::fs::copy(&tmp, &out).with_context(|| format!("copy {}", out.display()))?;
+                    let _ = std::fs::remove_file(&tmp);
+                }
                 written += 1;
                 println!(
                     "  {} {} {}",
@@ -362,6 +425,13 @@ fn run(args: &Args, style: &Style) -> Result<()> {
         }
     }
 
+    // folder mode: dict mặc định nằm trong <folder>_redacted/dict.json
+    let mut map_path = args.map.clone();
+    if let (None, false, Some(r)) = (&args.map, args.dry_run, root.as_ref()) {
+        let folder_name = r.file_name().and_then(|n| n.to_str()).unwrap_or("folder");
+        map_path = Some(r.with_file_name(format!("{folder_name}_redacted/dict.json")));
+    }
+
     println!("{}", style.rule(60));
     println!(
         "{} {} thay thế · {} file ghi ra",
@@ -370,7 +440,7 @@ fn run(args: &Args, style: &Style) -> Result<()> {
         written
     );
 
-    if let Some(map_path) = &args.map {
+    if let Some(map_path) = &map_path {
         if !redactor.mapping.is_empty() {
             let entries: Vec<serde_json::Value> = redactor
                 .mapping

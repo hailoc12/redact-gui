@@ -163,9 +163,29 @@ fn recursive_directory() {
     write(&dir.join("sub/b.txt"), "0901234567");
 
     let out = bin().args(["--recursive", &s(&dir)]).output().unwrap();
-    assert!(out.status.success());
-    assert!(dir.join("a.redacted.txt").exists());
-    assert!(dir.join("sub/b.redacted.txt").exists());
+    assert!(
+        out.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    // folder mode: mirror vào <tên>_redacted/ + dict chung
+    let out_root = dir.with_file_name(format!(
+        "{}_redacted",
+        dir.file_name().unwrap().to_str().unwrap()
+    ));
+    assert!(
+        out_root.join("a.redacted.txt").exists(),
+        "file ở root: {:?}",
+        out_root
+    );
+    assert!(
+        out_root.join("sub/b.redacted.txt").exists(),
+        "file ở sub: mirror cấu trúc"
+    );
+    assert!(
+        out_root.join("dict.json").exists(),
+        "dict chung cho cả folder"
+    );
 }
 
 #[test]

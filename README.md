@@ -135,7 +135,22 @@ redact-cli --rules rules.json baocao.txt
 |---|---|---|
 | `.txt` `.csv` `.md` `.log` ... | regex trực tiếp | `<tên>.redacted.<đuôi>` |
 | `.json` | redact từng value, giữ key, output vẫn là JSON hợp lệ | `<tên>.redacted.json` |
+| `.xml` | redact text node, giữ nguyên cấu trúc + attribute | `<tên>.redacted.xml` |
+| `.docx` `.xlsx` `.pptx` | mở zip, redact text bên trong — **GIỮ NGUYÊN ĐỊNH DẠNG** (định dạng chữ, công thức, layout) | `<tên>.redacted.<đuôi>` |
+| `.doc` `.xls` `.ppt` (cũ) | chưa hỗ trợ giữ format — tool sẽ bỏ qua kèm gợi ý chuyển sang dạng mới | — |
 | `.pdf` | trích text → redact (PDF scan không có text lớp sẽ không đọc được) | `<tên>.redacted.txt` |
+
+## Redact cả thư mục (folder + subfolder)
+
+GUI: bấm **Chọn thư mục…** → chọn mức → Redact. CLI:
+
+```bash
+redact-cli --recursive ./hoso/
+```
+
+Kết quả: thư mục `hoso_redacted/` **mirror đúng cấu trúc subfolder**, kèm **một file
+`dict.json` chung** cho toàn bộ thư mục (dùng để unredact cả loạt sau khi AI xử lý xong).
+File không hỗ trợ (doc/xls/ppt cũ) được bỏ qua và báo rõ.
 
 ## Hai chế độ sử dụng (đọc kỹ phần an toàn)
 
@@ -160,6 +175,12 @@ cảnh báo tương tự, và API key do bạn tự cung cấp.
 **Khuyến nghị của chúng tôi**: với tài liệu mật, dùng chế độ (a), tự đọc lại bản
 redact trước khi đưa đi bất cứ đâu.
 
+## ⚠️ Phạm vi và trách nhiệm
+
+- Tool chỉ **tự động hoá việc che một số thông tin thường được coi là nhạy cảm** — không bảo đảm tuyệt đối văn bản sau redact không còn sót dữ liệu nhạy cảm / dữ liệu mật.
+- Việc đưa văn bản đã redact lên các công cụ AI hay không là **trách nhiệm hoàn toàn của người sử dụng**.
+- **TUYỆT ĐỐI KHÔNG** dùng tool lên văn bản đã đóng dấu mật, hoặc được coi là mật theo các quy định khác. Quy định về bảo vệ văn bản mật luôn được tuân thủ trước hết.
+
 ## Bảo mật & quyền riêng tư
 
 - **Zero telemetry** — không có analytics, không crash report, không "phone home".
@@ -167,6 +188,16 @@ redact trước khi đưa đi bất cứ đâu.
 - **File gốc bất biến** — mặc định luôn ghi ra file mới.
 - `--map mapping.json` ghi quan hệ original ↔ placeholder để bạn khôi phục lại
   khi cần — **file mapping chứa dữ liệu nhạy cảm**, đừng commit, đừng gửi đi cùng.
+
+## Giới hạn trách nhiệm — đọc kỹ trước khi dùng
+
+Công cụ này chỉ **tự động hoá việc che một số thông tin thường được coi là nhạy cảm**
+khỏi văn bản. Nó **không bảo đảm tuyệt đối** văn bản sau redact không còn sót dữ liệu
+nhạy cảm hoặc dữ liệu mật. Việc đưa văn bản đã redact lên công cụ AI hay không là
+**trách nhiệm hoàn toàn của người sử dụng**.
+
+**Tuyệt đối không sử dụng công cụ này cho văn bản được đóng dấu MẬT hoặc được coi
+là mật theo quy định khác** — các văn bản này không được đưa lên AI dưới mọi hình thức.
 
 ## Build từ source
 

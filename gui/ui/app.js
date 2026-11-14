@@ -48,11 +48,22 @@ for (const name of ['redact', 'unredact']) {
 $('btn-pick-redact').addEventListener('click', async () => {
   clearError();
   const path = await pickFile([
-    { name: 'Tài liệu', extensions: ['txt', 'csv', 'md', 'log', 'json', 'pdf'] },
+    { name: 'Tài liệu', extensions: ['txt', 'csv', 'md', 'log', 'json', 'xml', 'pdf', 'docx', 'xlsx', 'pptx'] },
   ]);
   if (path) {
     state.redactPath = path;
     markPicked('redact-file-name', path, 'Chưa chọn file');
+    $('btn-redact').disabled = false;
+  }
+});
+
+$('btn-pick-folder').addEventListener('click', async () => {
+  clearError();
+  const picked = await window.__TAURI__.dialog.open({ multiple: false, directory: true });
+  const path = typeof picked === 'string' ? picked : null;
+  if (path) {
+    state.redactPath = path;
+    markPicked('redact-file-name', path + ' (cả thư mục con)');
     $('btn-redact').disabled = false;
   }
 });
@@ -72,6 +83,13 @@ $('btn-redact').addEventListener('click', async () => {
         : '');
     $('redact-out-path').textContent = r.redacted_path;
     $('redact-dict-path').textContent = r.dict_path;
+    if (r.is_folder) {
+      $('folder-summary').textContent =
+        `${r.files_ok} file đã redact` + (r.files_skipped ? ` · ${r.files_skipped} file bỏ qua (doc/xls/ppt cũ hoặc lỗi)` : '');
+      $('folder-summary-row').hidden = false;
+    } else {
+      $('folder-summary-row').hidden = true;
+    }
     $('redact-result').hidden = false;
   } catch (e) {
     showError(String(e));

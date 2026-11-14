@@ -47,6 +47,10 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
           Chọn file…
         </button>
+        <button class="btn-secondary" id="btn-pick-folder">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+          Chọn thư mục…
+        </button>
         <span class="file-name" id="redact-file-name">Chưa chọn file (txt · csv · json · pdf)</span>
       </div>
 
@@ -94,6 +98,10 @@
             <button class="btn-reveal" data-reveal="redact-out-path" title="Mở thư mục chứa file">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
             </button>
+          </div>
+          <div class="output-row" id="folder-summary-row" hidden>
+            <span class="output-label">Thư mục</span>
+            <code id="folder-summary"></code>
           </div>
           <div class="output-row">
             <span class="output-label">File dict</span>
@@ -146,7 +154,11 @@
       </div>
     </section>
 
-    <div class="error" id="error-box" hidden></div>
+      <div class="disclaimer">
+        Công cụ chỉ tự động hoá che một số thông tin nhạy cảm thường gặp — không bảo đảm tuyệt đối không sót. Việc đưa văn bản đã redact lên AI là trách nhiệm của người sử dụng. Tuyệt đối không dùng cho văn bản đóng dấu MẬT.
+      </div>
+
+      <div class="error" id="error-box" hidden></div>
   </main>
 
   <footer class="app-footer">

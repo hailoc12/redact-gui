@@ -11,12 +11,24 @@ use serde::Serialize;
 use tauri::Manager;
 
 #[derive(Serialize)]
+struct FileOutcome {
+    input: String,
+    output: String,
+    total: usize,
+    error: Option<String>,
+}
+
+#[derive(Serialize)]
 struct RedactResult {
     input_path: String,
     redacted_path: String,
     dict_path: String,
     total: usize,
     per_pattern: Vec<(String, usize)>,
+    is_folder: bool,
+    files_ok: usize,
+    files_skipped: usize,
+    skipped: Vec<FileOutcome>,
 }
 
 #[derive(Serialize)]
@@ -53,9 +65,23 @@ fn redact_file(path: String, level: u8) -> Result<RedactResult, String> {
         .collect();
     let mut redactor = Redactor::new(pattern_list).map_err(err)?;
 
-    let content = redact_cli::formats::redact_file(&file, &mut redactor).map_err(err)?;
+    if file.is_dir() {
+        return redact_folder(&file, &mut redactor);
+    }
+
+    let processed = redact_cli::formats::redact_file_to(&file, &mut redactor).map_err(err)?;
     let (redacted_path, dict_path) = output_paths(&file);
-    std::fs::write(&redacted_path, &content).map_err(|e| err(format!("ghi output: {e}")))?;
+    match processed {
+        redact_cli::formats::Processed::Text(content) => {
+            std::fs::write(&redacted_path, content).map_err(|e| err(format!("ghi output: {e}")))?;
+        }
+        redact_cli::formats::Processed::Written(p) => {
+            // zip formats đã ghi cạnh file gốc — chuyển vào vị trí chuẩn
+            if p != redacted_path {
+                let _ = std::fs::rename(&p, &redacted_path);
+            }
+        }
+    }
 
     let mapping: Vec<MapEntry> = redactor.mapping.clone();
     let dict_json = serde_json::to_string_pretty(&mapping).map_err(err)?;
@@ -68,6 +94,97 @@ fn redact_file(path: String, level: u8) -> Result<RedactResult, String> {
         dict_path: dict_path.display().to_string(),
         total: stats.total,
         per_pattern: stats.per_pattern,
+        is_folder: false,
+        files_ok: 1,
+        files_skipped: 0,
+        skipped: vec![],
+    })
+}
+
+/// Redact cả thư mục (đệ quy): mirror cấu trúc vào <tên>_redacted/ + 1 dict chung.
+fn redact_folder(root: &Path, redactor: &mut Redactor) -> Result<RedactResult, String> {
+    let folder_name = root
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("folder");
+    let out_root = root.with_file_name(format!("{folder_name}_redacted"));
+    std::fs::create_dir_all(&out_root).map_err(|e| err(format!("tạo thư mục output: {e}")))?;
+
+    let mut files_ok = 0usize;
+    let mut skipped: Vec<FileOutcome> = vec![];
+    let mut walker = walkdir::WalkDir::new(root)
+        .into_iter()
+        .filter_map(|e| e.ok());
+    let mut entries: Vec<PathBuf> = walker
+        .by_ref()
+        .filter(|e| e.file_type().is_file())
+        .map(|e| e.path().to_path_buf())
+        .collect();
+    entries.sort();
+
+    for f in entries {
+        if !redact_cli::formats::is_supported(&f) {
+            let ext = f
+                .extension()
+                .and_then(|e| e.to_str())
+                .unwrap_or("")
+                .to_string();
+            skipped.push(FileOutcome {
+                input: f.display().to_string(),
+                output: String::new(),
+                total: 0,
+                error: Some(format!(
+                    "định dạng legacy .{ext} — chuyển sang dạng mới rồi redact lại"
+                )),
+            });
+            continue;
+        }
+        let rel = f.strip_prefix(root).unwrap_or(f.as_os_str().as_ref());
+        let dst = out_root.join(rel);
+        if let Some(parent) = dst.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        match redact_cli::formats::redact_file_to(&f, redactor) {
+            Ok(redact_cli::formats::Processed::Text(content)) => {
+                if std::fs::write(&dst, content).is_ok() {
+                    files_ok += 1;
+                }
+            }
+            Ok(redact_cli::formats::Processed::Written(_tmp)) => {
+                // zip đã ghi cạnh file gốc — move vào mirror
+                let expected = redact_cli::formats::output_path(&f);
+                let moved = std::fs::rename(&expected, &dst).is_ok();
+                if moved {
+                    files_ok += 1;
+                } else {
+                    let _ = std::fs::copy(&expected, &dst);
+                    files_ok += 1;
+                }
+            }
+            Err(e) => skipped.push(FileOutcome {
+                input: f.display().to_string(),
+                output: String::new(),
+                total: 0,
+                error: Some(format!("{e:#}")),
+            }),
+        }
+    }
+
+    let dict_path = out_root.join("dict.json");
+    let dict_json = serde_json::to_string_pretty(&redactor.mapping).map_err(err)?;
+    std::fs::write(&dict_path, dict_json).map_err(|e| err(format!("ghi dict: {e}")))?;
+
+    let stats = redactor.stats();
+    Ok(RedactResult {
+        input_path: root.display().to_string(),
+        redacted_path: out_root.display().to_string(),
+        dict_path: dict_path.display().to_string(),
+        total: stats.total,
+        per_pattern: stats.per_pattern,
+        is_folder: true,
+        files_ok,
+        files_skipped: skipped.len(),
+        skipped,
     })
 }
 
