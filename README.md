@@ -12,6 +12,10 @@ Tác giả: **Lộc Đặng** — Founder, **LINH AN SOLUTIONS** — *Công ngh�
 
 ---
 
+## 📖 Tìm hiểu thêm
+
+Bài nghiên cứu [Che dữ liệu trước khi đưa lên AI thì luật cho phép đến đâu](https://locdang.com/che-du-lieu-truoc-khi-ua-len-ai-thi-luat-cho-phep-en-au/) — tổng hợp 10 văn bản pháp luật Việt Nam và 6 chuẩn quốc tế, trả lời câu hỏi tài liệu nào được phép redact để dùng với AI, khi nào thì không.
+
 ## Vì sao cần tool này?
 
 Che, xóa, làm sạch dữ liệu nhạy cảm trước khi đưa lên AI là một nhiệm vụ tốn thời gian nếu làm thủ công. Do đó **Redact GUI** ra đời để tự động hoá việc đó: giữ nguyên giá trị sử dụng của tài liệu, chỉ thay phần dữ liệu cá nhân nhạy cảm bằng mã nhận diện, trước khi tài liệu rời khỏi máy bạn.
