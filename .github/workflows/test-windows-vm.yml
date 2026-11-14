@@ -1,0 +1,49 @@
+name: test-windows-vm
+
+on:
+  workflow_dispatch:
+
+jobs:
+  windows-cli-roundtrip:
+    runs-on: windows-latest
+    steps:
+      - name: Download CLI release
+        shell: pwsh
+        run: gh release download v0.2.0 --repo ${{ github.repository }} -p "redact-tool-x86_64-pc-windows-msvc.zip"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Unzip
+        shell: pwsh
+        run: Expand-Archive redact-tool-x86_64-pc-windows-msvc.zip -DestinationPath cli
+      - name: Create test file
+        shell: pwsh
+        run: |
+          @'
+          BIEN BAN LAM VIEC
+          Ong Nguyen Van An - CCCD 012345678901 - SDT 0901 234 567
+          Cong ty TNHH Viet Phat, MST 0101234567-001
+          Email: an@vietphat.vn
+          So tien: 1.234.567.890 dong
+          '@ | Out-File -Encoding utf8 test.txt
+      - name: Redact with dict
+        shell: pwsh
+        run: |
+          .\cli\redact-tool.exe --level 2 --map dict.json test.txt
+          Get-Content test.redacted.txt
+      - name: Simulate AI edit + unredact
+        shell: pwsh
+        run: |
+          Add-Content test.redacted.txt "Tom tat AI: ho so [CCCD_1] can bo sung"
+          .\cli\redact-tool.exe unredact test.redacted.txt --dict dict.json
+          Get-Content test.redacted.restored.txt
+      - name: Verify round-trip
+        shell: pwsh
+        run: |
+          $orig = Get-Content test.txt -Raw
+          $restored = (Get-Content test.redacted.restored.txt -Raw) -replace "Tom tat AI.*`n", ""
+          if ($orig.Trim() -eq $restored.Trim()) { Write-Host "ROUNDTRIP_OK" }
+          else { Write-Host "ROUNDTRIP_MISMATCH"; exit 1 }
+          if ((Get-Content test.redacted.txt -Raw) -notmatch "012345678901") { Write-Host "NO_LEAK_OK" }
+          else { Write-Host "LEAK_DETECTED"; exit 1 }
+          if ((Get-Content test.redacted.txt -Raw) -match "1\.234\.567\.890") { Write-Host "MONEY_PRESERVED_OK" }
+          else { Write-Host "MONEY_EATEN"; exit 1 }
