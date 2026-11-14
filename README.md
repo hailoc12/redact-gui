@@ -36,6 +36,14 @@ chuột phải → Open để bypass Gatekeeper (binary chưa ký).
 
 ## GUI — hai chức năng: Redact & Unredact
 
+| Tab Redact | Sau khi redact |
+|---|---|
+| ![Tab Redact](docs/assets/gui_redact.png) | ![Kết quả redact](docs/assets/gui_redact_result.png) |
+
+![Tab Unredact — khôi phục bằng dict](docs/assets/gui_unredact_result.png)
+
+*(Ảnh render từ đúng source UI của app — screenshot app thật: [test report](docs/../../releases) kèm mỗi release.)*
+
 Mở app, có 2 tab:
 
 - **Redact**: chọn file (hoặc bấm 1 trong 3 file ví dụ có sẵn) → chọn mức
