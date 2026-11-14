@@ -8,7 +8,7 @@ fn s(p: &std::path::Path) -> String {
 }
 
 fn bin() -> Command {
-    Command::new(env!("CARGO_BIN_EXE_redact-tool"))
+    Command::new(env!("CARGO_BIN_EXE_redact-cli"))
 }
 
 fn tmp_dir(name: &str) -> PathBuf {

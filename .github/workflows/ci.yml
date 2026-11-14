@@ -17,11 +17,10 @@ jobs:
         with:
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
-      # GUI (tauri) cần gtk system libs trên Linux — sản phẩm chỉ macOS/Windows,
-      # CI test/clippy CLI core; GUI được build trong release job (macOS/Windows)
+      # CI test/clippy CLI core; GUI build ở release job (macOS/Windows/Linux kèm apt deps)
       - name: Format check
         run: cargo fmt --all -- --check
       - name: Clippy
-        run: cargo clippy -p redact-tool --all-targets -- -D warnings
+        run: cargo clippy -p redact-cli --all-targets -- -D warnings
       - name: Test
-        run: cargo test -p redact-tool
+        run: cargo test -p redact-cli

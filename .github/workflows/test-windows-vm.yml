@@ -9,12 +9,12 @@ jobs:
     steps:
       - name: Download CLI release
         shell: pwsh
-        run: gh release download v0.2.0 --repo ${{ github.repository }} -p "redact-tool-x86_64-pc-windows-msvc.zip"
+        run: gh release download v0.2.0 --repo ${{ github.repository }} -p "redact-cli-x86_64-pc-windows-msvc.zip"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Unzip
         shell: pwsh
-        run: Expand-Archive redact-tool-x86_64-pc-windows-msvc.zip -DestinationPath cli
+        run: Expand-Archive redact-cli-x86_64-pc-windows-msvc.zip -DestinationPath cli
       - name: Create test file
         shell: pwsh
         run: |
@@ -28,13 +28,13 @@ jobs:
       - name: Redact with dict
         shell: pwsh
         run: |
-          .\cli\redact-tool.exe --level 2 --map dict.json test.txt
+          .\cli\redact-cli.exe --level 2 --map dict.json test.txt
           Get-Content test.redacted.txt
       - name: Simulate AI edit + unredact
         shell: pwsh
         run: |
           Add-Content test.redacted.txt "Tom tat AI: ho so [CCCD_1] can bo sung"
-          .\cli\redact-tool.exe unredact test.redacted.txt --dict dict.json
+          .\cli\redact-cli.exe unredact test.redacted.txt --dict dict.json
           Get-Content test.restored.txt
       - name: Verify round-trip
         shell: pwsh

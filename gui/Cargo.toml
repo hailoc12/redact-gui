@@ -1,6 +1,6 @@
 [package]
-name = "redact-tool-gui"
-version = "0.2.0"
+name = "redact-gui"
+version = "0.2.1"
 edition = "2021"
 description = "GUI redact/unredact — Tauri, 100% local"
 license = "MIT"
@@ -10,7 +10,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 anyhow = "1"
-redact-tool = { path = ".." }
+redact-cli = { path = ".." }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri = { version = "2", features = [] }

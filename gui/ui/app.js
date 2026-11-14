@@ -1,4 +1,4 @@
-// redact-tool GUI — vanilla JS, gọi Rust commands qua Tauri invoke.
+// Redact GUI — vanilla JS, gọi Rust commands qua Tauri invoke.
 // Không framework, không network — mọi xử lý nằm ở Rust side (100% local).
 
 const { invoke } = window.__TAURI__.core;

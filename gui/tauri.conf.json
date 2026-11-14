@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "redact-tool",
-  "version": "0.2.0",
-  "identifier": "solutions.linhan.redact-tool",
+  "productName": "Redact GUI",
+  "version": "0.2.1",
+  "identifier": "solutions.linhan.redact-gui",
   "build": {
     "frontendDist": "ui"
   },
@@ -10,7 +10,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "redact — Lộc Đặng",
+        "title": "Redact GUI — Lộc Đặng",
         "width": 780,
         "height": 700,
         "minWidth": 700,

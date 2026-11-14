@@ -61,7 +61,7 @@ body {
 .wordmark {
   font-family: 'Manrope', sans-serif;
   font-weight: 600;
-  font-size: 17px;
+  font-size: 18px;
   color: var(--ink);
   line-height: 1.2;
 }
@@ -69,7 +69,7 @@ body {
 .descriptor {
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--red);

@@ -1,4 +1,4 @@
-//! redact-tool CLI — redact thông tin nhạy cảm trước khi đưa tài liệu lên AI.
+//! redact-cli — CLI của Redact GUI, redact thông tin nhạy cảm trước khi đưa tài liệu lên AI.
 //! 100% xử lý local, zero telemetry, không có bất kỳ kết nối mạng nào.
 
 use std::collections::HashSet;
@@ -7,18 +7,18 @@ use std::path::{Path, PathBuf};
 use anyhow::{bail, Context, Result};
 use clap::Parser;
 
-use redact_tool::brand::Style;
-use redact_tool::formats;
-use redact_tool::patterns::{self, CustomRule, Pattern, BUILT_IN};
-use redact_tool::redactor::{RedactStats, Redactor};
-use redact_tool::unredact::Unredactor;
+use redact_cli::brand::Style;
+use redact_cli::formats;
+use redact_cli::patterns::{self, CustomRule, Pattern, BUILT_IN};
+use redact_cli::redactor::{RedactStats, Redactor};
+use redact_cli::unredact::Unredactor;
 
 #[derive(Parser)]
 #[command(
-    name = "redact-tool",
+    name = "redact-cli",
     version,
     about = "Redact thông tin nhạy cảm (CCCD, CMND, MST, SĐT, email, tên DN) — 100% local, zero telemetry",
-    after_help = "Chế độ an toàn tuyệt đối: tool này KHÔNG có bất kỳ tính năng network nào.\nMọi xử lý diễn ra trên máy bạn.\n\nVí dụ:\n  redact-tool --level 2 baocao.pdf\n  redact-tool --dry-run baocao.pdf\n  redact-tool unredact baocao.redacted.txt --dict baocao.dict.json"
+    after_help = "Chế độ an toàn tuyệt đối: tool này KHÔNG có bất kỳ tính năng network nào.\nMọi xử lý diễn ra trên máy bạn.\n\nVí dụ:\n  redact-cli --level 2 baocao.pdf\n  redact-cli --dry-run baocao.pdf\n  redact-cli unredact baocao.redacted.txt --dict baocao.dict.json"
 )]
 struct Args {
     /// Subcommand: redact (mặc định) hoặc unredact
@@ -205,7 +205,7 @@ fn main() {
     let style = Style::new(args.no_color);
 
     if args.list_patterns {
-        println!("{}", style.heading("redact-tool — pattern có sẵn"));
+        println!("{}", style.heading("redact-cli — pattern có sẵn"));
         println!("{}", style.rule(52));
         for p in BUILT_IN {
             let status = if p.enabled {
@@ -317,7 +317,7 @@ fn run(args: &Args, style: &Style) -> Result<()> {
 
     println!(
         "{} {} file · {}",
-        style.heading("redact-tool"),
+        style.heading("redact-cli"),
         files.len(),
         if args.dry_run {
             style.muted("dry-run (không ghi file)")

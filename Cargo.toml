@@ -1,8 +1,8 @@
 [package]
-name = "redact-tool"
-version = "0.1.0"
+name = "redact-cli"
+version = "0.2.1"
 edition = "2021"
-description = "Redact thong tin nhay cam truoc khi dua tai lieu len AI - 100% local, zero telemetry"
+description = "Redact GUI CLI — redact thong tin nhay cam truoc khi dua tai lieu len AI, 100% local"
 license = "MIT"
 authors = ["Linh An Solutions"]
 

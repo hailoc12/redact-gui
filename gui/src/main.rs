@@ -1,12 +1,12 @@
-//! redact-tool GUI — Tauri v2. Toàn bộ xử lý nằm trong lib redact-tool (local, offline).
+//! Redact GUI — Tauri v2. Toàn bộ xử lý nằm trong lib redact-cli (local, offline).
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::path::{Path, PathBuf};
 
-use redact_tool::patterns::{ids_for_level, BUILT_IN};
-use redact_tool::redactor::{MapEntry, Redactor};
-use redact_tool::unredact::Unredactor;
+use redact_cli::patterns::{ids_for_level, BUILT_IN};
+use redact_cli::redactor::{MapEntry, Redactor};
+use redact_cli::unredact::Unredactor;
 use serde::Serialize;
 use tauri::Manager;
 
@@ -53,7 +53,7 @@ fn redact_file(path: String, level: u8) -> Result<RedactResult, String> {
         .collect();
     let mut redactor = Redactor::new(pattern_list).map_err(err)?;
 
-    let content = redact_tool::formats::redact_file(&file, &mut redactor).map_err(err)?;
+    let content = redact_cli::formats::redact_file(&file, &mut redactor).map_err(err)?;
     let (redacted_path, dict_path) = output_paths(&file);
     std::fs::write(&redacted_path, &content).map_err(|e| err(format!("ghi output: {e}")))?;
 
@@ -97,12 +97,12 @@ fn unredact_file(path: String, dict_path: String) -> Result<UnredactResult, Stri
     })
 }
 
-/// Liệt kê 3 file ví dụ bundle trong app; copy vào ~/redact-tool-vi-du/ để ghi output được.
+/// Liệt kê 3 file ví dụ bundle trong app; copy vào ~/redact-gui-vi-du/ để ghi output được.
 #[tauri::command]
 fn load_example(app: tauri::AppHandle, name: String) -> Result<String, String> {
     let resource_dir = app.path().resource_dir().map_err(err)?;
     let src = resource_dir.join("examples").join(&name);
-    let work_dir = dirs_home().join("redact-tool-vi-du");
+    let work_dir = dirs_home().join("redact-gui-vi-du");
     std::fs::create_dir_all(&work_dir).map_err(|e| err(format!("tạo thư mục: {e}")))?;
     let dst = work_dir.join(&name);
     std::fs::copy(&src, &dst).map_err(|e| err(format!("copy ví dụ: {e}")))?;
@@ -146,5 +146,5 @@ fn main() {
             list_examples
         ])
         .run(tauri::generate_context!())
-        .expect("khởi động redact-tool GUI");
+        .expect("khởi động Redact GUI");
 }
