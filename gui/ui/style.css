@@ -86,6 +86,13 @@ body {
   line-height: 1.2;
 }
 
+.tagline {
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
 .descriptor {
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
