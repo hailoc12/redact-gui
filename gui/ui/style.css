@@ -546,3 +546,24 @@ path.sc-draw { stroke-linecap: round; }
   .sc-float, .sc-draw, .sc-chip, .sc-packet, .sc-shield-pulse { animation: none !important; }
   .sc-draw { stroke-dashoffset: 0 !important; }
 }
+
+/* ═══ Scenes nhúng trong feature (v0.4 layout reorg) ═══ */
+.hero-flow { margin-bottom: var(--space-2); }
+.hero-flow .scene { max-height: 190px; }
+.hero-flow.small .scene { max-height: 150px; }
+
+.gate-scene {
+  border-top: 1px dashed var(--divider);
+  margin-top: var(--space-1);
+  padding-top: var(--space-1);
+}
+.gate-scene[hidden] { display: none; }
+.gate-scene .scene { max-height: 175px; }
+
+.privacy-strip {
+  margin-top: var(--space-2);
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--divider);
+}
+.privacy-strip .scene-wrap { margin-top: 0; }
+.privacy-strip .scene { max-height: 170px; }

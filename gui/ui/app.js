@@ -38,7 +38,7 @@ function markPicked(spanId, path, placeholder) {
 }
 
 // ─── tabs + slider ───
-const TABS = ['redact', 'unredact', 'how', 'law'];
+const TABS = ['redact', 'unredact', 'law'];
 function moveSlider(tabEl) {
   const s = $('tab-slider');
   s.style.left = tabEl.offsetLeft + 'px';
@@ -77,6 +77,7 @@ async function initDocClass() {
 }
 function selectClass(c) {
   state.docClassId = c.id;
+  document.getElementById('gate-scene').hidden = true; // đã chọn → thu animation
   state.classAction = c.action;
   document.querySelectorAll('.class-card').forEach((el) => {
     el.classList.toggle('selected', el.dataset.id === c.id);

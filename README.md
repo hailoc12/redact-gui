@@ -69,9 +69,11 @@ cargo feature `org-logging` → **không một dòng code network nào tồn t�
 cargo build --release --features org-logging
 ```
 
-**Tab Cách hoạt động** — 4 cảnh vector 2.5D động (SVG + CSS animation, reduced-motion
-tôn trọng): dòng chảy 3 bước redact→AI→unredact · khiên "dữ liệu không rời máy" ·
-dict là chìa khóa · gate 5 nhóm tài liệu. Giúp người dùng mới hiểu nguyên lý trong 30 giây.
+**Animation vector 2.5D nhúng ngay trong luồng làm việc** (SVG + CSS thuần,
+reduced-motion tôn trọng): banner "3 bước redact→AI→unredact" đầu tab Redact ·
+cảnh gate 5 nhóm → 3 lối đi hiện đúng bước khai loại (chưa chọn mới hiện) ·
+minh họa dict ⇄ dữ liệu gốc đầu tab Unredact · strip khiên "dữ liệu không rời máy"
+chung dưới cùng. Người dùng mới hiểu nguyên lý ngay trong lúc thao tác.
 
 **UI 2.5D** — design language theo brand Lộc Đặng: nền mesh gradient nhẹ, card nổi
 2 tầng shadow, motion reveal 800ms (tôn trọng reduced-motion), giữ quy tắc đỏ ≤10%.
