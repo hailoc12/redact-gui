@@ -43,6 +43,35 @@ các lần sau mở bình thường. Windows tương tự: SmartScreen → "More
 Ubuntu: `sudo apt install ./Redact.GUI_0.2.1_amd64.deb` (hoặc chạy `.AppImage`:
 `chmod +x && ./Redact.GUI_*.AppImage`).
 
+## Tuân thủ quy định (v0.4)
+
+**Tab Quy định** — tra cứu nhanh 5 nhóm tài liệu (bí mật nhà nước · dữ liệu cốt lõi ·
+dữ liệu cá nhân · bí mật kinh doanh · bí mật nghề nghiệp): cơ sở pháp lý, quy tắc
+đưa lên AI, link văn bản gốc. Tóm tắt từ nghiên cứu 10 văn bản QPPL + 6 chuẩn quốc tế
+([bài nghiên cứu đầy đủ](https://locdang.com/che-du-lieu-truoc-khi-ua-len-ai-thi-luat-cho-phep-en-au/)).
+
+**Khai loại tài liệu (bước 00)** — trước khi redact, chọn nhóm tài liệu:
+- Nhóm **bí mật nhà nước** → tool **dừng tuyệt đối**, không cho redact.
+- Nhóm **cần phê duyệt** (dữ liệu cốt lõi, bí mật kinh doanh/nghề nghiệp) → phải tick
+  *"đã xin phê duyệt + cam kết tự chịu trách nhiệm"* mới dùng tiếp.
+
+**Auto-scan dấu hiệu mật** — quét nội dung file/thư mục tìm dấu hiệu (TUYỆT MẬT, TỐI MẬT,
+cấm chia sẻ, bí mật nội bộ, CONFIDENTIAL…) → cảnh báo + yêu cầu xác nhận mới cho xử lý.
+
+**Activity log bản tổ chức (org-logging)** — organizations có thể rebuild bản customize
+nhận activity log (tài liệu nào, hành động nào, máy nào) POST về API nội bộ qua biến
+`REDACT_ORG_LOG_URL`. **Mặc định TẮT HOÀN TOÀO**: bản release cá nhân build không bật
+cargo feature `org-logging` → **không một dòng code network nào tồn tại trong binary**
+(verify: `strings redact-cli | grep REDACT_ORG_LOG_URL` = 0 ở bản thường, ≥1 ở bản
+`--features org-logging`). Rebuild cho tổ chức:
+
+```bash
+cargo build --release --features org-logging
+```
+
+**UI 2.5D** — design language theo brand Lộc Đặng: nền mesh gradient nhẹ, card nổi
+2 tầng shadow, motion reveal 800ms (tôn trọng reduced-motion), giữ quy tắc đỏ ≤10%.
+
 ## GUI — hai chức năng: Redact & Unredact
 
 | Tab Redact | Sau khi redact |

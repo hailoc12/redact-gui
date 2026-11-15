@@ -87,6 +87,8 @@ fn redact_file(path: String, level: u8) -> Result<RedactResult, String> {
     let dict_json = serde_json::to_string_pretty(&mapping).map_err(err)?;
     std::fs::write(&dict_path, dict_json).map_err(|e| err(format!("ghi dict: {e}")))?;
 
+    redact_cli::orglog::log_activity("redact", &file.display().to_string());
+
     let stats = redactor.stats();
     Ok(RedactResult {
         input_path: path,
@@ -174,6 +176,8 @@ fn redact_folder(root: &Path, redactor: &mut Redactor) -> Result<RedactResult, S
     let dict_json = serde_json::to_string_pretty(&redactor.mapping).map_err(err)?;
     std::fs::write(&dict_path, dict_json).map_err(|e| err(format!("ghi dict: {e}")))?;
 
+    redact_cli::orglog::log_activity("redact_folder", &root.display().to_string());
+
     let stats = redactor.stats();
     Ok(RedactResult {
         input_path: root.display().to_string(),
@@ -205,6 +209,8 @@ fn unredact_file(path: String, dict_path: String) -> Result<UnredactResult, Stri
         None => file.with_file_name(format!("{stem}.restored")),
     };
     std::fs::write(&out, restored).map_err(|e| err(format!("ghi output: {e}")))?;
+
+    redact_cli::orglog::log_activity("unredact", &file.display().to_string());
 
     Ok(UnredactResult {
         input_path: path,
@@ -252,6 +258,55 @@ fn dirs_home() -> PathBuf {
         .unwrap_or_else(std::env::temp_dir)
 }
 
+#[tauri::command]
+fn list_classes() -> Vec<redact_cli::compliance::ClassInfo> {
+    redact_cli::compliance::CLASSES.to_vec()
+}
+
+#[derive(Serialize)]
+struct ScanResult {
+    markers: Vec<redact_cli::compliance::Marker>,
+    files_scanned: usize,
+}
+
+/// Auto-scan dấu hiệu tài liệu mật (F3): quét file hoặc toàn thư mục (cap 200 file).
+#[tauri::command]
+fn scan_secret(path: String) -> ScanResult {
+    let p = PathBuf::from(&path);
+    let mut files: Vec<PathBuf> = Vec::new();
+    if p.is_dir() {
+        for e in walkdir::WalkDir::new(&p).into_iter().filter_map(|e| e.ok()) {
+            if e.file_type().is_file() && files.len() < 200 {
+                files.push(e.into_path());
+            }
+        }
+    } else {
+        files.push(p);
+    }
+    let mut markers = Vec::new();
+    let mut scanned = 0usize;
+    for f in &files {
+        if let Ok(text) = redact_cli::compliance::extract_text_for_scan(f) {
+            scanned += 1;
+            for m in redact_cli::compliance::scan_markers(&text) {
+                if !markers
+                    .iter()
+                    .any(|x: &redact_cli::compliance::Marker| x.phrase == m.phrase)
+                {
+                    markers.push(m);
+                }
+            }
+            if !markers.is_empty() && markers.iter().any(|m| m.phrase.contains("MẬT")) {
+                break; // dấu hiệu độ mật cao nhất — dừng sớm đủ bằng chứng
+            }
+        }
+    }
+    ScanResult {
+        markers,
+        files_scanned: scanned,
+    }
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -260,7 +315,9 @@ fn main() {
             redact_file,
             unredact_file,
             load_example,
-            list_examples
+            list_examples,
+            list_classes,
+            scan_secret
         ])
         .run(tauri::generate_context!())
         .expect("khởi động Redact GUI");

@@ -146,3 +146,8 @@ pub fn reject_legacy(ext: &str) -> Result<()> {
     }
     Ok(())
 }
+
+/// Public wrapper cho is_content_part (dùng bởi compliance scan).
+pub fn is_content_part_pub(name: &str) -> bool {
+    is_content_part(name)
+}
