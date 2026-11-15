@@ -118,10 +118,32 @@ function refreshRedactBtn() {
   if (ok && state.classAction !== 'Block' && !$('chk-approval').checked) ok = false;
   if (ok && state.scanned && !state.scanClean && !$('chk-scan').checked) ok = false;
   $('btn-redact').disabled = !ok;
+  // F2: label đúng ngữ cảnh
+  const isFolder = state.redactPath && String(state.redactPath).includes('(cả thư mục con)');
+  if ($('btn-redact').textContent !== 'Đang xử lý…') {
+    $('btn-redact').textContent = isFolder ? 'Redact cả thư mục' : 'Redact file';
+  }
+  // F1: hint nói rõ còn thiếu gì
+  const hint = $('redact-hint');
+  if (ok) {
+    hint.hidden = true;
+  } else {
+    const missing = [];
+    if (!state.redactPath) missing.push('chọn file/thư mục ở bước 01');
+    if (!state.docClassId) missing.push('khai loại tài liệu ở bước 00');
+    else if (state.classAction === 'Block') missing.push('nhóm này bị chặn — chọn nhóm khác');
+    else if (!$('chk-approval').checked) missing.push('tick cam kết quyền sử dụng');
+    if (state.scanned && !state.scanClean && !$('chk-scan').checked) missing.push('xác nhận cảnh báo mật ở bước 02');
+    hint.textContent = 'Còn thiếu: ' + missing.join(' · ');
+    hint.hidden = false;
+  }
 }
 
 // ─── chọn file / thư mục + trigger auto-scan ───
 async function setRedactPath(path, label) {
+  if (state.redactPath !== path) {
+    $('chk-approval').checked = false; // F3: consent gắn với TÀI LIỆU — đổi tài liệu phải cam kết lại
+  }
   state.redactPath = path;
   markPicked('redact-file-name', label || path, 'Chưa chọn file');
   await runScan(path);
@@ -363,4 +385,5 @@ $('law-source-link').addEventListener('click', (e) => {
   window.__TAURI__.opener.openUrl(
     'https://locdang.com/che-du-lieu-truoc-khi-ua-len-ai-thi-luat-cho-phep-en-au/');
 });
-moveSlider($('tab-redact'));
+requestAnimationFrame(() => moveSlider($('tab-redact')));
+window.addEventListener('load', () => setTimeout(() => moveSlider(document.querySelector('.tab.active')), 400));
