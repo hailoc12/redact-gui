@@ -8,12 +8,16 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- L0: nền sâu — mesh gradient 3 điểm lệch tâm, alpha thấp -->
+  <div class="bg-mesh" aria-hidden="true"></div>
+
   <!-- ═══ Header ═══ -->
   <header class="app-header">
     <div class="brand">
       <div class="monogram" aria-hidden="true">LĐ</div>
       <div class="brand-text">
         <div class="wordmark">Redact GUI</div>
+        <div class="tagline">Công cụ che dữ liệu khỏi văn bản để dùng với AI</div>
         <div class="descriptor">Lộc Đặng · Linh An Solutions</div>
       </div>
     </div>
@@ -22,12 +26,13 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
         100% local
       </span>
-      <span class="version">v0.2.0</span>
+      <span class="version">v0.4.0</span>
     </div>
   </header>
 
-  <!-- ═══ Tabs ═══ -->
+  <!-- ═══ Tabs (slider indicator) ═══ -->
   <nav class="tabs" role="tablist">
+    <div class="tab-slider" id="tab-slider" aria-hidden="true"></div>
     <button class="tab active" id="tab-redact" role="tab" aria-selected="true">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16c-.6-.6-.6-1.5 0-2.1L13.9 3a1.4 1.4 0 0 1 2 0l5.1 5.1a1.4 1.4 0 0 1 0 2L10 19"/></svg>
       Redact
@@ -36,11 +41,116 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
       Unredact
     </button>
+    <button class="tab" id="tab-log" role="tab" aria-selected="false">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h12l4 4v12H4Z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg>
+      Log
+    </button>
+    <button class="tab" id="tab-law" role="tab" aria-selected="false">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 7h14"/><path d="M5 7 3 10a2.4 2.4 0 0 0 4 0Z m14 0 2 3a2.4 2.4 0 0 1-4 0Z"/><path d="M8 21h8"/><path d="M12 11v10"/></svg>
+      Quy định
+    </button>
   </nav>
 
   <main>
     <!-- ═══ Tab Redact ═══ -->
     <section class="panel active" id="panel-redact">
+      <div class="hero-flow"><div class="scene-wrap">
+        <div class="scene-title">Nguyên lý: redact → AI xử lý → khôi phục về máy</div>
+        <svg viewBox="0 0 720 210" class="scene" role="img" aria-label="Sơ đồ 3 bước redact">
+          <defs>
+            <linearGradient id="g-card" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F1F3F4"/>
+            </linearGradient>
+            <linearGradient id="g-red" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#D02A24"/><stop offset="1" stop-color="#B2221D"/>
+            </linearGradient>
+            <filter id="f-card" x="-20%" y="-20%" width="140%" height="150%">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#C22620" flood-opacity="0.14"/>
+              <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#1F1F1F" flood-opacity="0.08"/>
+            </filter>
+          </defs>
+
+          <!-- card 1: tài liệu gốc -->
+          <g class="sc-float sc-float-1">
+            <rect x="28" y="46" width="150" height="112" rx="10" fill="url(#g-card)" stroke="#DADCE0" filter="url(#f-card)"/>
+            <rect x="46" y="66" width="86" height="7" rx="3.5" fill="#1F1F1F" opacity="0.75"/>
+            <rect x="46" y="82" width="112" height="7" rx="3.5" fill="#5F6368" opacity="0.5"/>
+            <rect x="46" y="98" width="70" height="7" rx="3.5" fill="#C22620"/>
+            <rect x="46" y="114" width="98" height="7" rx="3.5" fill="#5F6368" opacity="0.5"/>
+            <rect x="46" y="130" width="58" height="7" rx="3.5" fill="#C22620"/>
+            <text x="103" y="176" text-anchor="middle" class="sc-label">Tài liệu gốc</text>
+            <text x="103" y="190" text-anchor="middle" class="sc-sub">giữ nguyên trên máy</text>
+          </g>
+
+          <!-- mũi tên 1 vẽ dần -->
+          <path class="sc-draw sc-draw-1" d="M190 102 H262" stroke="#1F1F1F" stroke-width="2.5" fill="none" stroke-dasharray="72" stroke-dashoffset="72"/>
+          <path class="sc-draw sc-draw-1" d="m262 96 10 6-10 6z" fill="#1F1F1F"/>
+          <text x="226" y="88" text-anchor="middle" class="sc-step">① redact</text>
+
+          <!-- card 2: bản đã redact + chip placeholder bay ra -->
+          <g class="sc-float sc-float-2">
+            <rect x="285" y="46" width="150" height="112" rx="10" fill="#FFFFFF" stroke="#C22620" stroke-width="1.6" filter="url(#f-card)"/>
+            <rect x="303" y="66" width="86" height="7" rx="3.5" fill="#1F1F1F" opacity="0.75"/>
+            <rect x="303" y="82" width="112" height="7" rx="3.5" fill="#5F6368" opacity="0.5"/>
+            <g class="sc-chip sc-chip-1"><rect x="303" y="93" width="52" height="17" rx="5" fill="#C22620"/><text x="329" y="105.5" text-anchor="middle" class="sc-chip-t">CCCD_1</text></g>
+            <rect x="303" y="114" width="98" height="7" rx="3.5" fill="#5F6368" opacity="0.5"/>
+            <g class="sc-chip sc-chip-2"><rect x="303" y="125" width="46" height="17" rx="5" fill="#C22620"/><text x="326" y="137.5" text-anchor="middle" class="sc-chip-t">SDT_1</text></g>
+            <text x="360" y="176" text-anchor="middle" class="sc-label">Bản đã redact</text>
+            <text x="360" y="190" text-anchor="middle" class="sc-sub">+ file dict (chìa khóa)</text>
+          </g>
+
+          <!-- mũi tên 2 -->
+          <path class="sc-draw sc-draw-2" d="M447 102 H519" stroke="#1F1F1F" stroke-width="2.5" fill="none" stroke-dasharray="72" stroke-dashoffset="72"/>
+          <path class="sc-draw sc-draw-2" d="m519 96 10 6-10 6z" fill="#1F1F1F"/>
+          <text x="483" y="88" text-anchor="middle" class="sc-step">② lên AI</text>
+
+          <!-- card 3: AI -->
+          <g class="sc-float sc-float-3">
+            <rect x="542" y="46" width="150" height="112" rx="10" fill="url(#g-card)" stroke="#DADCE0" filter="url(#f-card)"/>
+            <circle cx="617" cy="88" r="22" fill="none" stroke="#C22620" stroke-width="2"/>
+            <text x="617" y="95" text-anchor="middle" class="sc-ai">AI</text>
+            <g class="sc-chip sc-chip-3"><rect x="560" y="118" width="52" height="17" rx="5" fill="#F1F3F4" stroke="#C22620"/><text x="586" y="130.5" text-anchor="middle" class="sc-chip-t red">CCCD_1</text></g>
+            <g class="sc-chip sc-chip-4"><rect x="620" y="118" width="46" height="17" rx="5" fill="#F1F3F4" stroke="#C22620"/><text x="643" y="130.5" text-anchor="middle" class="sc-chip-t red">SDT_1</text></g>
+            <text x="617" y="176" text-anchor="middle" class="sc-label">AI xử lý</text>
+            <text x="617" y="190" text-anchor="middle" class="sc-sub">chỉ thấy placeholder</text>
+          </g>
+
+          <!-- vòng unredact quay về (đi phía trên, không đè caption) -->
+          <path class="sc-draw sc-draw-3" d="M617 40 C 617 8, 103 8, 103 32" stroke="#A87E0F" stroke-width="3" fill="none" stroke-dasharray="620" stroke-dashoffset="620"/>
+          <path class="sc-draw sc-draw-3" d="M97 32 L109 32 L103 42 Z" fill="#D4A017"/>
+          <text x="360" y="34" text-anchor="middle" class="sc-step gold">③ unredact bằng dict — dữ liệu thật chưa bao giờ rời máy</text>
+        </svg>
+      </div></div>
+      <div class="step-label">00 · Khai loại tài liệu</div>
+      <div class="doc-class" id="doc-class-row" role="radiogroup"></div>
+      <div class="gate-scene" id="gate-scene"><div class="scene-wrap">
+        <div class="scene-title">Chọn nhóm tài liệu — 3 lối đi</div>
+        <svg viewBox="0 0 720 190" class="scene" role="img" aria-label="Phân loại tài liệu">
+          <!-- 5 hộp tài liệu -->
+          <g class="sc-float sc-float-1"><rect x="30" y="30" width="118" height="40" rx="8" fill="#FFFFFF" stroke="#C22620" stroke-width="2" filter="url(#f-card)"/><text x="89" y="54" text-anchor="middle" class="sc-chip-t">Bí mật nhà nước</text></g>
+          <g class="sc-float sc-float-2"><rect x="30" y="80" width="118" height="40" rx="8" fill="#FFFFFF" stroke="#DADCE0" filter="url(#f-card)"/><text x="89" y="104" text-anchor="middle" class="sc-chip-t">Dữ liệu cốt lõi</text></g>
+          <g class="sc-float sc-float-3"><rect x="30" y="130" width="118" height="40" rx="8" fill="#FFFFFF" stroke="#DADCE0" filter="url(#f-card)"/><text x="89" y="154" text-anchor="middle" class="sc-chip-t">Dữ liệu cá nhân</text></g>
+          <g class="sc-float sc-float-2"><rect x="30" y="5" width="196" height="18" rx="6" fill="#F1F3F4"/><text x="128" y="18" text-anchor="middle" class="sc-chip-t dim">Bí mật kinh doanh · nghề nghiệp</text></g>
+          <!-- 3 lối -->
+          <path class="sc-draw sc-draw-1" d="M148 50 C 210 50, 230 50, 300 50" stroke="#C22620" stroke-width="2.5" fill="none" stroke-dasharray="160" stroke-dashoffset="160"/>
+          <path class="sc-draw sc-draw-1" d="m300 44 10 6-10 6z" fill="#C22620"/>
+          <path class="sc-draw sc-draw-2" d="M148 100 C 210 100, 230 96, 300 88" stroke="#D4A017" stroke-width="2.5" fill="none" stroke-dasharray="160" stroke-dashoffset="160"/>
+          <path class="sc-draw sc-draw-2" d="m300 82 10 6-10 6z" fill="#D4A017"/>
+          <path class="sc-draw sc-draw-3" d="M148 150 C 210 150, 230 140, 300 126" stroke="#1F1F1F" stroke-width="2.5" fill="none" stroke-dasharray="160" stroke-dashoffset="160"/>
+          <path class="sc-draw sc-draw-3" d="m300 120 10 6-10 6z" fill="#1F1F1F"/>
+          <!-- 3 đích -->
+          <g><rect x="318" y="32" width="200" height="36" rx="8" fill="#FFFFFF" stroke="#C22620" stroke-width="2" filter="url(#f-card)"/><text x="418" y="49" text-anchor="middle" class="sc-chip-t red">✕ DỪNG tuyệt đối</text><text x="418" y="62" text-anchor="middle" class="sc-sub">không redact, không lên AI</text></g>
+          <g><rect x="318" y="70" width="200" height="36" rx="8" fill="#FFFFFF" stroke="#D4A017" stroke-width="2" filter="url(#f-card)"/><text x="418" y="87" text-anchor="middle" class="sc-chip-t">⚠ Cần phê duyệt</text><text x="418" y="100" text-anchor="middle" class="sc-sub">tick cam kết mới dùng tiếp</text></g>
+          <g><rect x="318" y="108" width="200" height="36" rx="8" fill="#FFFFFF" stroke="#1F1F1F" stroke-width="1.6" filter="url(#f-card)"/><text x="418" y="125" text-anchor="middle" class="sc-chip-t">✓ Redact rồi dùng được</text><text x="418" y="138" text-anchor="middle" class="sc-sub">đạt chuẩn khử nhận dạng</text></g>
+          <text x="560" y="176" text-anchor="middle" class="sc-sub dim">chi tiết pháp lý ở tab Quy định</text>
+        </svg>
+      </div></div>
+      <div class="gate-msg" id="gate-msg" hidden></div>
+      <label class="consent" id="consent-approval" hidden>
+        <input type="checkbox" id="chk-approval" />
+        <span>Tôi đã xin phê duyệt của cấp có thẩm quyền và cam kết tự chịu trách nhiệm khi xử lý tài liệu này.</span>
+      </label>
+
       <div class="step-label">01 · Chọn file</div>
       <div class="file-row" id="redact-file-row">
         <button class="btn-secondary" id="btn-pick-redact">
@@ -51,7 +161,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
           Chọn thư mục…
         </button>
-        <span class="file-name" id="redact-file-name">Chưa chọn file (txt · csv · json · pdf)</span>
+        <span class="file-name" id="redact-file-name">Chưa chọn file (txt · csv · json · xml · pdf · docx · xlsx · pptx)</span>
       </div>
 
       <div class="examples" id="examples-row">
@@ -59,7 +169,12 @@
         <button class="chip" data-example="">…</button>
       </div>
 
-      <div class="step-label">02 · Chọn mức redact</div>
+      <div class="step-label">02 · Cảnh báo tự động</div>
+      <div class="scan-status" id="scan-status">
+        <span class="scan-idle">Chọn tài liệu ở bước 01 — tool sẽ tự động rà quét dấu hiệu tài liệu mật.</span>
+      </div>
+
+      <div class="step-label">03 · Chọn mức redact</div>
       <div class="levels" role="radiogroup">
         <label class="level">
           <input type="radio" name="level" value="1" />
@@ -84,9 +199,19 @@
         </label>
       </div>
 
+      <div class="scan-box" id="scan-box" hidden>
+        <div class="scan-title" id="scan-title"></div>
+        <ul class="scan-markers" id="scan-markers"></ul>
+        <label class="consent">
+          <input type="checkbox" id="chk-scan" />
+          <span>Tôi xác nhận đã xin được quyền redact thông tin trong tài liệu này và chịu mọi trách nhiệm nếu tiếp tục sử dụng.</span>
+        </label>
+      </div>
+
       <button class="btn-primary" id="btn-redact" disabled>
         Redact file
       </button>
+      <div class="btn-hint" id="redact-hint" hidden></div>
 
       <div class="result" id="redact-result" hidden>
         <div class="result-title">Xong — kiểm tra lại trước khi đưa lên AI</div>
@@ -117,6 +242,32 @@
 
     <!-- ═══ Tab Unredact ═══ -->
     <section class="panel" id="panel-unredact">
+      <div class="hero-flow small"><div class="scene-wrap">
+        <div class="scene-title">File dict — chìa khóa khôi phục dữ liệu</div>
+        <svg viewBox="0 0 560 200" class="scene" role="img" aria-label="Đối chiếu placeholder và dữ liệu gốc">
+          <g class="sc-float sc-float-1">
+            <rect x="40" y="26" width="480" height="26" rx="6" fill="#F1F3F4"/>
+            <text x="60" y="44" class="sc-chip-t red">[CCCD_1]</text>
+            <text x="270" y="44" class="sc-chip-t">⇄</text>
+            <text x="330" y="44" class="sc-chip-t">0123 4567 8901</text>
+          </g>
+          <g class="sc-float sc-float-2">
+            <rect x="40" y="62" width="480" height="26" rx="6" fill="#F1F3F4"/>
+            <text x="60" y="80" class="sc-chip-t red">[SDT_1]</text>
+            <text x="270" y="80" class="sc-chip-t">⇄</text>
+            <text x="330" y="80" class="sc-chip-t">0901 234 567</text>
+          </g>
+          <g class="sc-float sc-float-3">
+            <rect x="40" y="98" width="480" height="26" rx="6" fill="#F1F3F4"/>
+            <text x="60" y="116" class="sc-chip-t red">[EMAIL_1]</text>
+            <text x="270" y="116" class="sc-chip-t">⇄</text>
+            <text x="330" y="116" class="sc-chip-t">an@vietphat.vn</text>
+          </g>
+          <rect x="40" y="140" width="480" height="32" rx="8" fill="#FFFFFF" stroke="#D4A017" stroke-width="2" filter="url(#f-card)"/>
+          <text x="280" y="161" text-anchor="middle" class="sc-chip-t">dict.json — giữ trên máy, đừng gửi cùng file redacted</text>
+          <text x="280" y="190" text-anchor="middle" class="sc-sub">AI chỉ thấy placeholder · dữ liệu thật ở trong dict</text>
+        </svg>
+      </div></div>
       <div class="step-label">01 · Chọn file đã qua AI</div>
       <div class="file-row">
         <button class="btn-secondary" id="btn-pick-unredact">
@@ -138,6 +289,7 @@
       <button class="btn-primary" id="btn-unredact" disabled>
         Khôi phục dữ liệu
       </button>
+      <div class="btn-hint" id="unredact-hint" hidden></div>
 
       <div class="result" id="unredact-result" hidden>
         <div class="result-title">Đã khôi phục</div>
@@ -154,11 +306,96 @@
       </div>
     </section>
 
-      <div class="disclaimer">
-        Công cụ chỉ tự động hoá che một số thông tin nhạy cảm thường gặp — không bảo đảm tuyệt đối không sót. Việc đưa văn bản đã redact lên AI là trách nhiệm của người sử dụng. Tuyệt đối không dùng cho văn bản đóng dấu MẬT.
+<!-- ═══ Tab Log ═══ -->
+    <section class="panel" id="panel-log">
+      <div class="log-meta">
+        <div class="log-meta-row">
+          <span class="output-label">Máy đang dùng</span>
+          <code id="log-machine">…</code>
+        </div>
+        <div class="log-meta-row full">
+          <span class="output-label">File log</span>
+          <code id="log-path">…</code>
+          <button class="btn-reveal" id="btn-open-logfile" title="Mở thư mục chứa file log">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+          </button>
+        </div>
+        <div class="log-meta-row full">
+          <span class="output-label">Báo cáo tổ chức</span>
+          <label class="org-status" id="org-status-box">
+            <input type="checkbox" id="chk-org" disabled />
+            <span id="org-status-text">Đang kiểm tra…</span>
+          </label>
+        </div>
       </div>
 
-      <div class="error" id="error-box" hidden></div>
+      <div class="step-label" style="margin-top:16px">Danh sách tài liệu đã che / khôi phục</div>
+      <div class="log-table" id="log-table">
+        <div class="log-row log-head">
+          <span>Thời gian</span><span>Hành động</span><span>Tài liệu</span><span>Nhóm khai loại</span>
+        </div>
+        <div id="log-entries"></div>
+      </div>
+      <div class="log-empty" id="log-empty" hidden>Chưa có hoạt động nào được ghi.</div>
+      <button class="btn-secondary" id="btn-clear-log" style="margin-top:8px">Xóa log local…</button>
+    </section>
+
+    <!-- ═══ Tab Quy định ═══ -->
+
+    <section class="panel" id="panel-law">
+      <div class="law-intro">
+        <div class="law-title">5 nhóm tài liệu — 5 quy tắc chơi khác nhau</div>
+        <div class="law-sub">Tóm tắt trọng yếu từ nghiên cứu 10 văn bản QPPL + 6 chuẩn quốc tế (14/11/2026).
+          <a href="#" id="law-source-link">Đọc bài nghiên cứu đầy đủ kèm nguồn →</a></div>
+      </div>
+      <div class="law-legend">
+        <span><i class="lg-stop stop"></i><b>DỪNG</b> tuyệt đối</span>
+        <span><i class="lg-stop appr"></i><b>Cần phê duyệt</b> + cam kết</span>
+        <span><i class="lg-stop ok"></i><b>Redact</b> rồi dùng được</span>
+      </div>
+      <div id="law-classes"></div>
+      <div class="law-flow">
+        <div class="law-title small">Quyết định nhanh — 6 câu hỏi lần lượt</div>
+        <ol class="flow-list">
+          <li>Văn bản thuộc <strong>bí mật nhà nước</strong>? → <em>Dừng.</em></li>
+          <li>Thuộc <strong>dữ liệu cốt lõi, quan trọng</strong> bị hạn chế? → <em>Hỏi đơn vị quản lý dữ liệu.</em></li>
+          <li>Có <strong>dữ liệu cá nhân</strong>? → <em>Che đạt chuẩn khử nhận dạng rồi được dùng.</em></li>
+          <li>Dính <strong>bí mật kinh doanh / nghề nghiệp</strong>? → <em>Theo chính sách nội bộ / đồng ý bằng văn bản.</em></li>
+          <li>Đã che bằng quy tắc cứng, chạy trên máy mình? → <em>Tuân thủ quy trình.</em></li>
+          <li>Còn băn khoăn? → <em>Không gửi gì mà anh không chịu nổi nếu nó bị công khai.</em></li>
+        </ol>
+      </div>
+    </section>
+
+    <div class="privacy-strip"><div class="scene-wrap half">
+        <div class="scene-title">Dữ liệu thật không rời máy bạn</div>
+        <svg viewBox="0 0 340 210" class="scene" role="img" aria-label="Dữ liệu bị chặn lại trong máy">
+          <defs>
+            <linearGradient id="g-lap" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E8EAED"/>
+            </linearGradient>
+          </defs>
+          <!-- sóng dữ liệu đỏ bay ra -->
+          <g class="sc-packet sc-packet-1"><circle cx="60" cy="70" r="7" fill="#C22620"/><text x="74" y="74" class="sc-chip-t">CCCD</text></g>
+          <g class="sc-packet sc-packet-2"><circle cx="52" cy="112" r="6" fill="#C22620" opacity="0.8"/><text x="66" y="116" class="sc-chip-t">SĐT</text></g>
+          <g class="sc-packet sc-packet-3"><circle cx="64" cy="150" r="5" fill="#C22620" opacity="0.6"/><text x="78" y="154" class="sc-chip-t">EMAIL</text></g>
+          <!-- khiên -->
+          <g class="sc-shield-pulse">
+            <path d="M170 40 218 58v34c0 30-20 47-48 60-28-13-48-30-48-60V58Z" fill="#FFFFFF" stroke="#C22620" stroke-width="3" filter="url(#f-card)"/>
+            <path d="m150 105 14 14 28-30" stroke="#C22620" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <!-- máy -->
+          <rect x="120" y="160" width="120" height="10" rx="5" fill="#1F1F1F" opacity="0.85"/>
+          <rect x="155" y="152" width="50" height="8" rx="4" fill="#5F6368"/>
+          <text x="170" y="196" text-anchor="middle" class="sc-sub">0 network · rút mạng vẫn chạy</text>
+        </svg>
+      </div></div>
+
+    <div class="disclaimer">
+      Công cụ chỉ tự động hoá che một số thông tin nhạy cảm thường gặp — không bảo đảm tuyệt đối không sót. Việc đưa văn bản đã redact lên AI là trách nhiệm của người sử dụng. Tuyệt đối không dùng cho văn bản đóng dấu MẬT.
+    </div>
+
+    <div class="error" id="error-box" hidden></div>
   </main>
 
   <footer class="app-footer">

@@ -1,10 +1,16 @@
 [package]
 name = "redact-cli"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 description = "Redact GUI CLI — redact thong tin nhay cam truoc khi dua tai lieu len AI, 100% local"
 license = "MIT"
 authors = ["Linh An Solutions"]
+
+[features]
+default = []
+# Bản tổ chức (org-mode): bật activity log POST về API nội bộ.
+# Bản release cá nhân KHÔNG bật — zero network code trong binary.
+org-logging = []
 
 [dependencies]
 anyhow = "1"

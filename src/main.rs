@@ -312,6 +312,7 @@ fn run_unredact(
                     "    {}",
                     style.number(&format!("{n} placeholder khôi phục"))
                 );
+                redact_cli::orglog::log_activity("unredact", &file.display().to_string());
             }
             Ok((formats::Processed::Written(out), n)) => {
                 println!(
@@ -397,6 +398,7 @@ fn run(args: &Args, style: &Style) -> Result<()> {
                     style.muted(&out.display().to_string())
                 );
                 println!("    {}", style.number(&fmt_stats(&file_stats)));
+                redact_cli::orglog::log_activity("redact", &file.display().to_string());
             }
             Ok(Some(formats::Processed::Written(tmp))) => {
                 // zip formats ghi cạnh file gốc — chuyển tới đúng vị trí output
@@ -413,6 +415,7 @@ fn run(args: &Args, style: &Style) -> Result<()> {
                     style.muted(&out.display().to_string())
                 );
                 println!("    {}", style.number(&fmt_stats(&file_stats)));
+                redact_cli::orglog::log_activity("redact", &file.display().to_string());
             }
             Ok(None) => {
                 println!("  {} {}", file.display(), style.muted("(dry-run)"));
