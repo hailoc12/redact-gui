@@ -73,7 +73,6 @@ fn chrono_like_now() -> String {
 }
 
 /// Chuyển số ngày từ 1970 → (năm, tháng, ngày) — thuật toán Howard Hinnant.
-#[cfg(feature = "org-logging")]
 fn civil_from_days(z: i64) -> (i64, u32, u32) {
     let z = z + 719_468;
     let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
@@ -149,4 +148,110 @@ mod tests {
             assert!(j.contains(k), "thiếu field {k}: {j}");
         }
     }
+}
+
+// ═══ Local activity log — LUÔN ghi (không phải network), hiển thị ở tab Log ═══
+// File: ~/.redact-gui/activity.jsonl — mỗi dòng 1 event JSON.
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct LocalEvent {
+    pub timestamp: String,
+    pub action: String,
+    pub file_name: String,
+    pub doc_class: String,
+    pub machine: String,
+}
+
+/// Fingerprint máy: hash hostname + OS (không lưu thông tin cá nhân nặng).
+pub fn machine_fingerprint() -> String {
+    let host = std::env::var("HOSTNAME")
+        .or_else(|_| std::env::var("COMPUTERNAME"))
+        .ok()
+        .or_else(|| {
+            std::process::Command::new("hostname")
+                .output()
+                .ok()
+                .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        })
+        .unwrap_or_else(|| "unknown".into());
+    let os = if cfg!(target_os = "windows") {
+        "win"
+    } else if cfg!(target_os = "macos") {
+        "mac"
+    } else {
+        "linux"
+    };
+    format!("{os}-{host}")
+}
+
+/// Đường dẫn file log local.
+pub fn local_log_path() -> std::path::PathBuf {
+    let home = std::env::var_os("HOME")
+        .or_else(|| std::env::var_os("USERPROFILE"))
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(std::env::temp_dir);
+    home.join(".redact-gui").join("activity.jsonl")
+}
+
+/// Ghi 1 event vào log local (append JSONL, tự tạo thư mục).
+pub fn log_local(action: &str, file_name: &str, doc_class: &str) {
+    let ev = LocalEvent {
+        timestamp: crate::orglog::now_iso(),
+        action: action.to_string(),
+        file_name: file_name.to_string(),
+        doc_class: doc_class.to_string(),
+        machine: machine_fingerprint(),
+    };
+    let path = local_log_path();
+    if let Some(parent) = path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if let Ok(line) = serde_json::to_string(&ev) {
+        use std::io::Write;
+        if let Ok(mut f) = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&path)
+        {
+            let _ = writeln!(f, "{line}");
+        }
+    }
+}
+
+/// Đọc toàn bộ log local (mới nhất cuối).
+pub fn read_local_log() -> Vec<LocalEvent> {
+    let mut out = Vec::new();
+    if let Ok(content) = std::fs::read_to_string(local_log_path()) {
+        for line in content.lines().rev() {
+            if let Ok(ev) = serde_json::from_str::<LocalEvent>(line) {
+                out.push(ev);
+            }
+        }
+    }
+    out
+}
+
+/// ISO-8601 UTC không dependency.
+pub fn now_iso() -> String {
+    let secs = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let days = secs / 86400;
+    let (y, m, d) = civil_from_days(days as i64);
+    let rem = secs % 86400;
+    format!(
+        "{y:04}-{m:02}-{d:02}T{:02}:{:02}:{:02}Z",
+        rem / 3600,
+        (rem % 3600) / 60,
+        rem % 60
+    )
+}
+
+/// Trạng thái org-mode: build có feature + endpoint đã cấu hình.
+pub fn org_mode_status() -> (bool, bool) {
+    (
+        cfg!(feature = "org-logging"),
+        std::env::var("REDACT_ORG_LOG_URL").is_ok(),
+    )
 }

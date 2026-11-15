@@ -567,3 +567,33 @@ path.sc-draw { stroke-linecap: round; }
 }
 .privacy-strip .scene-wrap { margin-top: 0; }
 .privacy-strip .scene { max-height: 170px; }
+
+/* ═══ Tab Log ═══ */
+.log-meta { display: flex; flex-direction: column; gap: 6px; }
+.log-meta-row { display: flex; align-items: center; gap: var(--space-1); }
+.log-meta-row code {
+  font-size: 11.5px; background: var(--panel); border: 1px solid var(--divider);
+  border-radius: 4px; padding: 4px 8px; flex: 1; user-select: text;
+}
+.org-status { display: flex; gap: 8px; align-items: center; font-size: 12px; }
+.org-status input { accent-color: var(--red); }
+
+.log-table { border: 1px solid var(--divider); border-radius: 8px; overflow: hidden; }
+.log-row {
+  display: grid; grid-template-columns: 150px 100px 1fr 130px; gap: 8px;
+  padding: 6px 10px; font-size: 11.5px; border-bottom: 1px solid var(--divider);
+}
+.log-row:last-child { border-bottom: none; }
+.log-head { background: var(--panel); font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.log-file { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; user-select: text; }
+.log-empty { padding: var(--space-2); text-align: center; color: var(--muted); font-size: 12px; }
+
+/* ─── Mục 02 cảnh báo tự động ─── */
+.scan-status { font-size: 12px; padding: 8px var(--space-2); background: var(--panel); border-radius: 6px; }
+.scan-ok { color: var(--ink); font-weight: 500; }
+.scan-hit { color: var(--red-dark); font-weight: 600; }
+.scan-running { color: var(--muted); }
+.scan-idle { color: var(--muted); }
+
+/* khai loại 7 nhóm → grid tự co */
+.doc-class { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important; }

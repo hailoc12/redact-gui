@@ -38,7 +38,7 @@ function markPicked(spanId, path, placeholder) {
 }
 
 // ─── tabs + slider ───
-const TABS = ['redact', 'unredact', 'law'];
+const TABS = ['redact', 'unredact', 'log', 'law'];
 function moveSlider(tabEl) {
   const s = $('tab-slider');
   s.style.left = tabEl.offsetLeft + 'px';
@@ -74,6 +74,9 @@ async function initDocClass() {
     label.querySelector('input').addEventListener('change', () => selectClass(c));
     row.appendChild(label);
   }
+  // mặc định: Tài liệu công khai
+  const def = row.querySelector('input[value="public_document"]');
+  if (def) { def.checked = true; def.dispatchEvent(new Event('change')); }
 }
 function selectClass(c) {
   state.docClassId = c.id;
@@ -86,6 +89,7 @@ function selectClass(c) {
   const msg = $('gate-msg');
   const consent = $('consent-approval');
   $('chk-approval').checked = false;
+  const consentSpan = consent.querySelector('span');
   if (c.action === 'Block') {
     msg.hidden = false;
     msg.className = 'gate-msg block';
@@ -95,12 +99,14 @@ function selectClass(c) {
     msg.hidden = false;
     msg.className = 'gate-msg';
     msg.textContent = `${c.action_label}. ${c.rule}`;
+    consentSpan.textContent = 'Tôi đã xin phê duyệt của cấp có thẩm quyền và cam kết tự chịu trách nhiệm khi xử lý tài liệu này.';
     consent.hidden = false;
   } else {
     msg.hidden = false;
     msg.className = 'gate-msg';
     msg.textContent = `${c.action_label}. ${c.rule}`;
-    consent.hidden = true;
+    consentSpan.textContent = 'Tôi có quyền sử dụng tài liệu này (hoặc đã được phê duyệt) và cam kết tự chịu trách nhiệm khi che thông tin.';
+    consent.hidden = false;
   }
   refreshRedactBtn();
 }
@@ -109,7 +115,7 @@ function selectClass(c) {
 function refreshRedactBtn() {
   let ok = !!state.redactPath && !!state.docClassId;
   if (ok && state.classAction === 'Block') ok = false;
-  if (ok && state.classAction === 'RequireApproval' && !$('chk-approval').checked) ok = false;
+  if (ok && state.classAction !== 'Block' && !$('chk-approval').checked) ok = false;
   if (ok && state.scanned && !state.scanClean && !$('chk-scan').checked) ok = false;
   $('btn-redact').disabled = !ok;
 }
@@ -144,11 +150,17 @@ async function runScan(path) {
   $('chk-scan').checked = false;
   const box = $('scan-box');
   box.hidden = true;
-  if (!path) return;
+  const statusEl = $('scan-status');
+  if (!path) {
+    statusEl.innerHTML = '<span class="scan-idle">Chọn tài liệu ở bước 01 — tool sẽ tự động rà quét dấu hiệu tài liệu mật.</span>';
+    return;
+  }
+  statusEl.innerHTML = '<span class="scan-running">⟳ Đang rà quét nội dung…</span>';
   try {
     const r = await invoke('scan_secret', { path });
     state.scanned = true;
     if (r.markers.length > 0) {
+      statusEl.innerHTML = `<span class="scan-hit">⚠ Phát hiện dấu hiệu tài liệu mật — cần xác nhận bên dưới.</span>`;
       $('scan-title').textContent =
         `Phát hiện ${r.markers.length} dấu hiệu tài liệu mật (quét ${r.files_scanned} file) — xác nhận trước khi tiếp tục:`;
       const ul = $('scan-markers');
@@ -161,10 +173,12 @@ async function runScan(path) {
       box.hidden = false;
     } else {
       state.scanClean = true;
+      statusEl.innerHTML = `<span class="scan-ok">✓ Không phát hiện dấu hiệu mật (đã rà quét ${r.files_scanned} file).</span>`;
     }
   } catch (e) {
     // scan là lớp phụ — lỗi scan không chặn redact
     state.scanClean = true;
+    statusEl.innerHTML = '<span class="scan-idle">Không quét được nội dung (file nhị phân?) — tự kiểm tra thủ công.</span>';
   }
 }
 $('chk-scan').addEventListener('change', refreshRedactBtn);
@@ -205,7 +219,7 @@ $('btn-redact').addEventListener('click', async () => {
   $('btn-redact').textContent = 'Đang xử lý…';
   try {
     const level = Number(document.querySelector('input[name="level"]:checked').value);
-    const r = await invoke('redact_file', { path: state.redactPath, level });
+    const r = await invoke('redact_file', { path: state.redactPath, level, docClass: state.docClassId || '-' });
     $('redact-stats').innerHTML =
       `<strong>${r.total}</strong> thông tin đã được thay bằng placeholder` +
       (r.per_pattern.length ? ' — ' + r.per_pattern.map(([k, v]) => `${k} ${v}`).join(', ') : '');
@@ -299,6 +313,46 @@ for (const btn of document.querySelectorAll('.btn-reveal')) {
     if (path) revealItemInDir(path);
   });
 }
+
+
+// ─── tab Log ───
+async function refreshLog() {
+  try {
+    const info = await invoke('get_log_info');
+    $('log-machine').textContent = info.machine;
+    $('log-path').textContent = info.log_path;
+    const chk = $('chk-org');
+    chk.checked = info.org_feature && info.org_endpoint;
+    $('org-status-text').textContent = info.org_feature
+      ? (info.org_endpoint
+          ? 'ĐANG BẬT — log gửi về API tổ chức (bản build org-mode)'
+          : 'Build org-mode nhưng CHƯA cấu hình REDACT_ORG_LOG_URL — log chỉ lưu local')
+      : 'TẮT — bản cá nhân: log chỉ lưu trên máy bạn, không gửi đi đâu';
+    const wrap = $('log-entries');
+    wrap.innerHTML = '';
+    $('log-empty').hidden = info.entries.length > 0;
+    for (const ev of info.entries.slice(0, 50)) {
+      const row = document.createElement('div');
+      row.className = 'log-row';
+      row.innerHTML = `<span>${ev.timestamp.replace('T', ' ').replace('Z', '')}</span>
+        <span>${ev.action}</span>
+        <span class="log-file" title="${ev.file_name}">${ev.file_name}</span>
+        <span>${ev.doc_class}</span>`;
+      wrap.appendChild(row);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+$('tab-log').addEventListener('click', refreshLog);
+$('btn-open-logfile').addEventListener('click', () => {
+  const p = $('log-path').textContent;
+  if (p && p !== '…') revealItemInDir(p);
+});
+$('btn-clear-log').addEventListener('click', async () => {
+  await invoke('clear_log');
+  refreshLog();
+});
 
 // ─── init ───
 initDocClass();

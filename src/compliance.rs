@@ -14,6 +14,10 @@ pub const RESEARCH_URL: &str =
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize)]
 pub enum DocClass {
+    /// Tài liệu công khai — mặc định, vẫn cần cam kết có quyền sử dụng
+    PublicDocument,
+    /// Tài liệu của chính mình — ngoại lệ cá nhân (Luật 91/2025 Đ.20 k.6)
+    OwnDocument,
     /// Bí mật nhà nước (Tuyệt mật / Tối mật / Mật) — Luật 117/2025/QH15
     SecretState,
     /// Dữ liệu cốt lõi, quan trọng, dùng riêng — Luật Dữ liệu 60/2024/QH15
@@ -32,7 +36,7 @@ pub enum Action {
     Block,
     /// Cần phê duyệt cấp có thẩm quyền + cam kết trách nhiệm
     RequireApproval,
-    /// Được dùng sau khi redact đạt chuẩn khử nhận dạng
+    /// Được dùng sau khi cam kết quyền sử dụng + redact đạt chuẩn
     AllowedAfterRedact,
 }
 
@@ -48,6 +52,24 @@ pub struct ClassInfo {
 }
 
 pub const CLASSES: &[ClassInfo] = &[
+    ClassInfo {
+        id: "public_document",
+        label: "Tài liệu công khai",
+        legal_basis: "Tài liệu công khai theo quy định pháp luật (ngoài 5 nhóm bảo mật)",
+        rule: "Vẫn cần cam kết có quyền sử dụng tài liệu. Nếu trong tài liệu có dữ liệu cá nhân của người khác, che đạt chuẩn khử nhận dạng.",
+        action: Action::AllowedAfterRedact,
+        action_label: "Cam kết quyền sử dụng rồi redact được",
+        source: "https://locdang.com/che-du-lieu-truoc-khi-ua-len-ai-thi-luat-cho-phep-en-au/",
+    },
+    ClassInfo {
+        id: "own_document",
+        label: "Tài liệu của tôi",
+        legal_basis: "Luật 91/2025/QH15, Điều 20 khoản 6 — chủ thể tự chuyển dữ liệu của mình",
+        rule: "Ngoại lệ cá nhân: tự chuyển dữ liệu cá nhân của chính mình thì không cần đường lùi khử nhận dạng. Vẫn cam kết đây là tài liệu của bạn.",
+        action: Action::AllowedAfterRedact,
+        action_label: "Cam kết quyền sử dụng rồi redact được",
+        source: "https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/91qh.signed.pdf",
+    },
     ClassInfo {
         id: "secret_state",
         label: "Bí mật nhà nước (Tuyệt mật / Tối mật / Mật)",
@@ -183,6 +205,14 @@ mod tests {
 
     #[test]
     fn classification_matrix() {
+        assert_eq!(
+            action_for("public_document").unwrap().0,
+            Action::AllowedAfterRedact
+        );
+        assert_eq!(
+            action_for("own_document").unwrap().0,
+            Action::AllowedAfterRedact
+        );
         assert_eq!(action_for("secret_state").unwrap().0, Action::Block);
         assert_eq!(action_for("core_data").unwrap().0, Action::RequireApproval);
         assert_eq!(
@@ -198,7 +228,7 @@ mod tests {
             Action::RequireApproval
         );
         assert!(action_for("không_tồn_tại").is_none());
-        assert_eq!(CLASSES.len(), 5);
+        assert_eq!(CLASSES.len(), 7);
     }
 
     #[test]
@@ -206,7 +236,9 @@ mod tests {
         for c in CLASSES {
             assert!(c.source.starts_with("http"), "{} thiếu nguồn", c.id);
             assert!(
-                c.legal_basis.contains("Luật") || c.legal_basis.contains("Bộ luật"),
+                c.legal_basis.contains("Luật")
+                    || c.legal_basis.contains("Bộ luật")
+                    || c.legal_basis.contains("pháp luật"),
                 "{} thiếu cơ sở pháp lý",
                 c.id
             );

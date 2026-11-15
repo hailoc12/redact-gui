@@ -41,6 +41,10 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
       Unredact
     </button>
+    <button class="tab" id="tab-log" role="tab" aria-selected="false">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h12l4 4v12H4Z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg>
+      Log
+    </button>
     <button class="tab" id="tab-law" role="tab" aria-selected="false">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 7h14"/><path d="M5 7 3 10a2.4 2.4 0 0 0 4 0Z m14 0 2 3a2.4 2.4 0 0 1-4 0Z"/><path d="M8 21h8"/><path d="M12 11v10"/></svg>
       Quy định
@@ -165,7 +169,12 @@
         <button class="chip" data-example="">…</button>
       </div>
 
-      <div class="step-label">02 · Chọn mức redact</div>
+      <div class="step-label">02 · Cảnh báo tự động</div>
+      <div class="scan-status" id="scan-status">
+        <span class="scan-idle">Chọn tài liệu ở bước 01 — tool sẽ tự động rà quét dấu hiệu tài liệu mật.</span>
+      </div>
+
+      <div class="step-label">03 · Chọn mức redact</div>
       <div class="levels" role="radiogroup">
         <label class="level">
           <input type="radio" name="level" value="1" />
@@ -195,7 +204,7 @@
         <ul class="scan-markers" id="scan-markers"></ul>
         <label class="consent">
           <input type="checkbox" id="chk-scan" />
-          <span>Tôi đã kiểm tra các dấu hiệu trên, xác nhận tài liệu được phép xử lý.</span>
+          <span>Tôi xác nhận đã xin được quyền redact thông tin trong tài liệu này và chịu mọi trách nhiệm nếu tiếp tục sử dụng.</span>
         </label>
       </div>
 
@@ -294,7 +303,41 @@
       </div>
     </section>
 
-<!-- ═══ Tab Quy định ═══ -->
+<!-- ═══ Tab Log ═══ -->
+    <section class="panel" id="panel-log">
+      <div class="log-meta">
+        <div class="log-meta-row">
+          <span class="output-label">Máy đang dùng</span>
+          <code id="log-machine">…</code>
+        </div>
+        <div class="log-meta-row">
+          <span class="output-label">File log</span>
+          <code id="log-path">…</code>
+          <button class="btn-reveal" id="btn-open-logfile" title="Mở thư mục chứa file log">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+          </button>
+        </div>
+        <div class="log-meta-row">
+          <span class="output-label">Báo cáo tổ chức</span>
+          <label class="org-status" id="org-status-box">
+            <input type="checkbox" id="chk-org" disabled />
+            <span id="org-status-text">Đang kiểm tra…</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="step-label" style="margin-top:16px">Danh sách tài liệu đã che / khôi phục</div>
+      <div class="log-table" id="log-table">
+        <div class="log-row log-head">
+          <span>Thời gian</span><span>Hành động</span><span>Tài liệu</span><span>Nhóm khai loại</span>
+        </div>
+        <div id="log-entries"></div>
+      </div>
+      <div class="log-empty" id="log-empty" hidden>Chưa có hoạt động nào được ghi.</div>
+      <button class="btn-secondary" id="btn-clear-log" style="margin-top:8px">Xóa log local…</button>
+    </section>
+
+    <!-- ═══ Tab Quy định ═══ -->
 
     <section class="panel" id="panel-law">
       <div class="law-intro">

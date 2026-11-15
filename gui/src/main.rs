@@ -55,7 +55,7 @@ fn err<E: std::fmt::Display>(e: E) -> String {
 }
 
 #[tauri::command]
-fn redact_file(path: String, level: u8) -> Result<RedactResult, String> {
+fn redact_file(path: String, level: u8, doc_class: String) -> Result<RedactResult, String> {
     let file = PathBuf::from(&path);
     let ids = ids_for_level(level);
     let pattern_list: Vec<_> = BUILT_IN
@@ -66,7 +66,7 @@ fn redact_file(path: String, level: u8) -> Result<RedactResult, String> {
     let mut redactor = Redactor::new(pattern_list).map_err(err)?;
 
     if file.is_dir() {
-        return redact_folder(&file, &mut redactor);
+        return redact_folder(&file, &mut redactor, &doc_class);
     }
 
     let processed = redact_cli::formats::redact_file_to(&file, &mut redactor).map_err(err)?;
@@ -87,6 +87,7 @@ fn redact_file(path: String, level: u8) -> Result<RedactResult, String> {
     let dict_json = serde_json::to_string_pretty(&mapping).map_err(err)?;
     std::fs::write(&dict_path, dict_json).map_err(|e| err(format!("ghi dict: {e}")))?;
 
+    redact_cli::orglog::log_local("redact", &file.display().to_string(), &doc_class);
     redact_cli::orglog::log_activity("redact", &file.display().to_string());
 
     let stats = redactor.stats();
@@ -104,7 +105,11 @@ fn redact_file(path: String, level: u8) -> Result<RedactResult, String> {
 }
 
 /// Redact cả thư mục (đệ quy): mirror cấu trúc vào <tên>_redacted/ + 1 dict chung.
-fn redact_folder(root: &Path, redactor: &mut Redactor) -> Result<RedactResult, String> {
+fn redact_folder(
+    root: &Path,
+    redactor: &mut Redactor,
+    doc_class: &str,
+) -> Result<RedactResult, String> {
     let folder_name = root
         .file_name()
         .and_then(|n| n.to_str())
@@ -176,6 +181,7 @@ fn redact_folder(root: &Path, redactor: &mut Redactor) -> Result<RedactResult, S
     let dict_json = serde_json::to_string_pretty(&redactor.mapping).map_err(err)?;
     std::fs::write(&dict_path, dict_json).map_err(|e| err(format!("ghi dict: {e}")))?;
 
+    redact_cli::orglog::log_local("redact_folder", &root.display().to_string(), doc_class);
     redact_cli::orglog::log_activity("redact_folder", &root.display().to_string());
 
     let stats = redactor.stats();
@@ -210,6 +216,7 @@ fn unredact_file(path: String, dict_path: String) -> Result<UnredactResult, Stri
     };
     std::fs::write(&out, restored).map_err(|e| err(format!("ghi output: {e}")))?;
 
+    redact_cli::orglog::log_local("unredact", &file.display().to_string(), "-");
     redact_cli::orglog::log_activity("unredact", &file.display().to_string());
 
     Ok(UnredactResult {
@@ -307,6 +314,32 @@ fn scan_secret(path: String) -> ScanResult {
     }
 }
 
+#[derive(Serialize)]
+struct LogInfo {
+    entries: Vec<redact_cli::orglog::LocalEvent>,
+    log_path: String,
+    machine: String,
+    org_feature: bool,
+    org_endpoint: bool,
+}
+
+#[tauri::command]
+fn get_log_info() -> LogInfo {
+    let (feature, endpoint) = redact_cli::orglog::org_mode_status();
+    LogInfo {
+        entries: redact_cli::orglog::read_local_log(),
+        log_path: redact_cli::orglog::local_log_path().display().to_string(),
+        machine: redact_cli::orglog::machine_fingerprint(),
+        org_feature: feature,
+        org_endpoint: endpoint,
+    }
+}
+
+#[tauri::command]
+fn clear_log() -> bool {
+    std::fs::remove_file(redact_cli::orglog::local_log_path()).is_ok()
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -317,7 +350,9 @@ fn main() {
             load_example,
             list_examples,
             list_classes,
-            scan_secret
+            scan_secret,
+            get_log_info,
+            clear_log
         ])
         .run(tauri::generate_context!())
         .expect("khởi động Redact GUI");
