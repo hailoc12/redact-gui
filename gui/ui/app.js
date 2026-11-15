@@ -38,7 +38,7 @@ function markPicked(spanId, path, placeholder) {
 }
 
 // ─── tabs + slider ───
-const TABS = ['redact', 'unredact', 'law'];
+const TABS = ['redact', 'unredact', 'how', 'law'];
 function moveSlider(tabEl) {
   const s = $('tab-slider');
   s.style.left = tabEl.offsetLeft + 'px';

@@ -478,3 +478,71 @@ main { flex: 1; padding: var(--space-2) var(--space-3); overflow-y: auto; perspe
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ═══ Scenes 2.5D — tab Cách hoạt động ═══ */
+.scene-wrap { margin-top: var(--space-2); }
+.scene-wrap.half { display: inline-block; width: calc(50% - var(--space-1)); vertical-align: top; }
+@media (max-width: 740px) { .scene-wrap.half { width: 100%; } }
+
+.scene-title {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.scene { width: 100%; height: auto; display: block; overflow: visible; }
+
+.scene text { font-family: 'Inter', sans-serif; }
+.sc-label { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 12px; fill: var(--ink); }
+.sc-sub { font-size: 9.5px; fill: var(--muted); }
+.sc-sub.dim, .sc-chip-t.dim { opacity: 0.7; }
+.sc-step { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 11px; fill: var(--red); }
+.sc-step.gold { fill: #9A7A0F; }
+.sc-chip-t { font-size: 9.5px; font-weight: 600; fill: var(--white); }
+.sc-chip-t.red { fill: var(--red); }
+.sc-ai { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 15px; fill: var(--red); }
+
+@keyframes sc-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.sc-float { animation: sc-float 5s var(--ease-25d) infinite; }
+.sc-float-2 { animation-delay: -1.7s; }
+.sc-float-3 { animation-delay: -3.4s; }
+
+@keyframes sc-draw {
+  to { stroke-dashoffset: 0; }
+}
+.sc-draw-1 { animation: sc-draw 900ms var(--ease-25d) 200ms both; }
+.sc-draw-2 { animation: sc-draw 900ms var(--ease-25d) 1000ms both; }
+.sc-draw-3 { animation: sc-draw 1400ms var(--ease-25d) 1800ms both; }
+path.sc-draw { stroke-linecap: round; }
+
+@keyframes sc-chip-in {
+  0% { opacity: 0; transform: translateX(-6px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.sc-chip { animation: sc-chip-in 500ms var(--ease-25d) 900ms both; }
+.sc-chip-2 { animation-delay: 1050ms; }
+.sc-chip-3 { animation-delay: 1900ms; }
+.sc-chip-4 { animation-delay: 2050ms; }
+
+@keyframes sc-packet {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(10px); }
+}
+.sc-packet { animation: sc-packet 2.6s ease-in-out infinite; }
+.sc-packet-2 { animation-delay: -0.9s; }
+.sc-packet-3 { animation-delay: -1.8s; }
+
+@keyframes sc-shield {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.035); }
+}
+.sc-shield-pulse { transform-origin: 170px 100px; animation: sc-shield 3.2s var(--ease-25d) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-float, .sc-draw, .sc-chip, .sc-packet, .sc-shield-pulse { animation: none !important; }
+  .sc-draw { stroke-dashoffset: 0 !important; }
+}
