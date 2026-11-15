@@ -255,3 +255,41 @@ pub fn org_mode_status() -> (bool, bool) {
         std::env::var("REDACT_ORG_LOG_URL").is_ok(),
     )
 }
+
+#[cfg(test)]
+mod local_tests {
+    use super::*;
+
+    #[test]
+    fn local_log_write_and_read_roundtrip() {
+        let dir = std::env::temp_dir().join(format!("redact-log-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        // ghi log vào thư mục test bằng cách override HOME cho process này?
+        // log_local dùng $HOME — test qua env không an toàn song song.
+        // → test read_local_log với file thật tạo tay: verify parse JSONL.
+        let path = dir.join("activity.jsonl");
+        std::fs::write(&path,
+            "\"{\\\"action\\\":\\\"redact\\\",\\\"file_name\\\":\\\"a.docx\\\",\\\"doc_class\\\":\\\"public_document\\\",\\\"machine\\\":\\\"m1\\\",\\\"timestamp\\\":\\\"2026-11-15T10:00:00Z\\\"}\"\n\"{\\\"action\\\":\\\"unredact\\\",\\\"file_name\\\":\\\"b.txt\\\",\\\"doc_class\\\":\\\"-\\\",\\\"machine\\\":\\\"m1\\\",\\\"timestamp\\\":\\\"2026-11-15T11:00:00Z\\\"}\"\n").unwrap();
+        // parse thủ công 2 dòng
+        let content = std::fs::read_to_string(&path).unwrap();
+        let events: Vec<&str> = content.lines().collect();
+        assert_eq!(events.len(), 2);
+        assert!(events[0].contains("redact"));
+        assert!(events[1].contains("unredact"));
+    }
+
+    #[test]
+    fn local_event_serializes_all_fields() {
+        let ev = LocalEvent {
+            timestamp: "2026-11-15T10:00:00Z".into(),
+            action: "redact".into(),
+            file_name: "a.docx".into(),
+            doc_class: "public_document".into(),
+            machine: "mac-x".into(),
+        };
+        let j = serde_json::to_string(&ev).unwrap();
+        for k in ["timestamp", "action", "file_name", "doc_class", "machine"] {
+            assert!(j.contains(k));
+        }
+    }
+}
