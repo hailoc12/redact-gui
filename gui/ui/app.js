@@ -265,7 +265,15 @@ $('btn-redact').addEventListener('click', async () => {
 
 // ─── unredact ───
 function refreshUnredactBtn() {
-  $('btn-unredact').disabled = !(state.unredactPath && state.dictPath);
+  const ok = !!(state.unredactPath && state.dictPath);
+  $('btn-unredact').disabled = !ok;
+  const hint = $('unredact-hint');
+  if (ok) { hint.hidden = true; return; }
+  const missing = [];
+  if (!state.unredactPath) missing.push('chọn file đã qua AI');
+  if (!state.dictPath) missing.push('chọn file dict');
+  hint.textContent = 'Còn thiếu: ' + missing.join(' · ');
+  hint.hidden = false;
 }
 
 $('btn-pick-unredact').addEventListener('click', async () => {
