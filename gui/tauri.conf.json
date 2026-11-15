@@ -11,10 +11,10 @@
     "windows": [
       {
         "title": "Redact GUI — Lộc Đặng",
-        "width": 780,
-        "height": 700,
-        "minWidth": 700,
-        "minHeight": 620,
+        "width": 720,
+        "height": 640,
+        "minWidth": 660,
+        "minHeight": 580,
         "center": true
       }
     ],
